@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conference Deadlines Wall</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="slideshow-container" class="slideshow-container">
+    <div id="bg-image-container" class="bg-image-container">
+      <img id="slide-image" src="" alt="" class="slide-image">
+    </div>
+    
+    <div class="gradient-overlay"></div>
+
+    <!-- Header (Upper Left) -->
+    <header class="slide-header">
+      <div class="focus-pill" id="slide-focus"></div>
+      <h1 class="conference-title">
+        <a id="slide-url" href="#" target="_blank" rel="noopener noreferrer">
+          <span id="slide-acronym"></span>
+          <span id="slide-year"></span>
+        </a>
+      </h1>
+      <h2 class="conference-name" id="slide-fullname"></h2>
+    </header>
+
+    <!-- Main Caption (Bottom Left) -->
+    <main class="slide-caption">
+      <div class="location-text" id="slide-location"></div>
+      <div class="deadline-box">
+        <span class="deadline-label">Submission due:</span>
+        <span class="deadline-value" id="slide-deadline"></span>
+        <span class="deadline-comment" id="slide-comment"></span>
+      </div>
+    </main>
+
+    <!-- Credit Footer (Bottom Right) -->
+    <footer class="slide-footer">
+      <span id="photo-credit"></span>
+    </footer>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state hidden">
+      <div class="empty-message">
+        No selected conference submission deadlines in the next four months.
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

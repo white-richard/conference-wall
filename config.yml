@@ -1,0 +1,103 @@
+window_months: 4
+slide_seconds: 15
+display_timezone: PST
+venues:
+  osdi:
+    aliases: [OSDI]
+    primary_focus: Software Systems
+  sosp:
+    aliases: [SOSP]
+    primary_focus: Software Systems
+  eurosys:
+    aliases: [EuroSys, EUROSYS]
+    primary_focus: Software Systems
+  nsdi:
+    aliases: [NSDI]
+    primary_focus: Software Systems
+  fast:
+    aliases: [FAST]
+    primary_focus: Software Systems
+  asplos:
+    aliases: [ASPLOS]
+    primary_focus: Software Systems
+  atc:
+    aliases: [ATC, USENIX ATC, SIGOPS ATC]
+    primary_focus: Software Systems
+  mobisys:
+    aliases: [MobiSys, MOBISYS]
+    primary_focus: Software Systems
+  middleware:
+    aliases: [Middleware, MIDDLEWARE]
+    primary_focus: Software Systems
+  icse:
+    aliases: [ICSE]
+    primary_focus: Software Systems
+  fse:
+    aliases: [FSE, ESEC/FSE]
+    primary_focus: Software Systems
+  ase:
+    aliases: [ASE]
+    primary_focus: Software Systems
+  issta:
+    aliases: [ISSTA]
+    primary_focus: Software Systems
+  chi:
+    aliases: [CHI]
+    primary_focus: HCI
+  uist:
+    aliases: [UIST]
+    primary_focus: HCI
+  cscw:
+    aliases: [CSCW]
+    primary_focus: HCI
+  iui:
+    aliases: [IUI]
+    primary_focus: HCI
+  ubicomp:
+    aliases: [UbiComp, UBICOMP, IMWUT, UbiComp/ISWC]
+    primary_focus: HCI
+  dis:
+    aliases: [DIS]
+    primary_focus: HCI
+  mobilehci:
+    aliases: [MobileHCI, MOBILEHCI]
+    primary_focus: HCI
+  tei:
+    aliases: [TEI]
+    primary_focus: HCI
+  facct:
+    aliases: [FAccT, FAT*]
+    primary_focus: HCI
+  neurips:
+    aliases: [NeurIPS, NIPS]
+    primary_focus: Machine Learning
+  icml:
+    aliases: [ICML]
+    primary_focus: Machine Learning
+  iclr:
+    aliases: [ICLR]
+    primary_focus: Machine Learning
+  aaai:
+    aliases: [AAAI]
+    primary_focus: Machine Learning
+  aistats:
+    aliases: [AISTATS]
+    primary_focus: Machine Learning
+  uai:
+    aliases: [UAI]
+    primary_focus: Machine Learning
+  colt:
+    aliases: [COLT]
+    primary_focus: Machine Learning
+  kdd:
+    aliases: [KDD, SIGKDD]
+    primary_focus: Machine Learning
+  mlsys:
+    aliases: [MLSys, MLSYS]
+    primary_focus: Machine Learning
+  collas:
+    aliases: [CoLLAs, COLLAS]
+    primary_focus: Machine Learning
+  rlc:
+    aliases: [RLC]
+    primary_focus: Machine Learning

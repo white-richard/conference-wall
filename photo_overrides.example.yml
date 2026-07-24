@@ -1,0 +1,6 @@
+photos:
+  "las vegas|usa":
+    pexels_id: 12345678
+  "hamburg|germany":
+    file: local_photos/hamburg.jpg
+    credit: "Photo by the lab"

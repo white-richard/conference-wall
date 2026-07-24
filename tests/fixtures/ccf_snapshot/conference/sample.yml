@@ -1,0 +1,47 @@
+- title: MLSys
+  description: Conference on Machine Learning and Systems
+  sub: ML
+  confs:
+    - year: 2026
+      link: https://mlsys.org
+      timeline:
+        - deadline: '2026-04-01 23:59:59'
+          comment: Abstract Due
+        - deadline: '2026-09-15 23:59:59'
+          comment: Round 1
+        - deadline: '2026-10-30 23:59:59'
+          comment: Round 2
+      timezone: AoE
+      place: Austin, TX, USA
+
+- title: OSDI
+  description: USENIX Symposium on Operating Systems Design and Implementation
+  sub: SYS
+  confs:
+    - year: 2026
+      link: https://www.usenix.org/conference/osdi26
+      timeline:
+        - deadline: '2026-08-15 23:59:59'
+          comment: Round 1
+      timezone: UTC-8
+      place: Carlsbad, CA, USA
+
+- title: CHI
+  description: ACM CHI Conference on Human Factors in Computing Systems
+  sub: HCI
+  confs:
+    - year: 2027
+      link: https://chi2027.acm.org
+      timeline:
+        - deadline: '2026-09-01 23:59:59'
+      timezone: UTC+5:30
+      place: Yokohama, Japan
+
+- title: UNCONFIGURED_VENUE
+  description: Unknown Conference
+  sub: OTHER
+  confs:
+    - year: 2026
+      timeline:
+        - deadline: '2026-09-01 23:59:59'
+      place: Paris, France

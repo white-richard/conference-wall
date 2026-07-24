@@ -1,0 +1,20 @@
+{
+  "page": 1,
+  "per_page": 20,
+  "photos": [
+    {
+      "id": 12345678,
+      "width": 2400,
+      "height": 1350,
+      "url": "https://www.pexels.com/photo/12345678/",
+      "photographer": "Jane Smith",
+      "photographer_url": "https://www.pexels.com/@janesmith",
+      "alt": "Las Vegas Nevada USA aerial skyline view",
+      "src": {
+        "original": "https://images.pexels.com/photos/12345678/pexels-photo-12345678.jpeg",
+        "landscape": "https://images.pexels.com/photos/12345678/pexels-photo-12345678.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200"
+      }
+    }
+  ],
+  "total_results": 1
+}

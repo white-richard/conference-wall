@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "confwall"
+version = "0.1.0"
+description = "Browser slideshow for upcoming computer science conference submission deadlines"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "requests",
+    "PyYAML",
+    "Pillow",
+    "python-dateutil",
+]
+
+[project.scripts]
+confwall = "confwall.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "playwright",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "live: marks tests as live tests requiring internet access (skipped by default)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+ignore = ["BLE001", "DTZ007", "UP017", "SIM102", "S110"]
+
+[tool.coverage.run]
+source = ["confwall"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
