@@ -1,5 +1,6 @@
 """Configuration loader and models for confwall."""
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,28 @@ CCF_SUB_MAP = {
     "NW": "Software Systems",
     "DB": "Software Systems",
 }
+
+
+def load_dotenv(dotenv_path: str | Path | None = ".env") -> None:
+    """Load key-value environment variables from a .env file if present."""
+    if not dotenv_path:
+        return
+    path = Path(dotenv_path)
+    if not path.exists() or not path.is_file():
+        return
+    try:
+        content = path.read_text(encoding="utf-8")
+        for line in content.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip("'\"")
+            if key and key not in os.environ:
+                os.environ[key] = value
+    except Exception:
+        pass
 
 
 @dataclass(frozen=True)
@@ -73,8 +96,10 @@ class Config:
         return None
 
 
-def load_config(path: str | Path) -> Config:
+def load_config(path: str | Path, dotenv_path: str | Path | None = ".env") -> Config:
     """Load configuration from a YAML file."""
+    if dotenv_path:
+        load_dotenv(dotenv_path)
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"Configuration file not found: {path}")

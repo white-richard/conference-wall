@@ -164,6 +164,22 @@
     }
   }
 
+  function updateFullscreenIcon() {
+    const fsBtn = document.getElementById("fullscreen-btn");
+    if (!fsBtn) return;
+    const iconFs = fsBtn.querySelector(".icon-fullscreen");
+    const iconExit = fsBtn.querySelector(".icon-exit-fullscreen");
+    if (document.fullscreenElement) {
+      if (iconFs) iconFs.classList.add("hidden");
+      if (iconExit) iconExit.classList.remove("hidden");
+      fsBtn.setAttribute("title", "Exit Fullscreen (Press F)");
+    } else {
+      if (iconFs) iconFs.classList.remove("hidden");
+      if (iconExit) iconExit.classList.add("hidden");
+      fsBtn.setAttribute("title", "Toggle Fullscreen (Press F)");
+    }
+  }
+
   function initControls() {
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowRight") {
@@ -178,11 +194,26 @@
       }
     });
 
+    const fsBtn = document.getElementById("fullscreen-btn");
+    if (fsBtn) {
+      fsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFullscreen();
+      });
+    }
+
+    document.addEventListener("fullscreenchange", updateFullscreenIcon);
+
     const container = document.getElementById("slideshow-container");
     if (container) {
       container.addEventListener("click", (e) => {
-        // Prevent click if user clicked a link
-        if (e.target.tagName === "A" || e.target.closest("a")) {
+        // Prevent click if user clicked a link or control button
+        if (
+          e.target.tagName === "A" ||
+          e.target.closest("a") ||
+          e.target.tagName === "BUTTON" ||
+          e.target.closest("button")
+        ) {
           return;
         }
         nextSlide();

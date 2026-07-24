@@ -22,7 +22,8 @@ def create_valid_jpeg_bytes(width: int = 1920, height: int = 1080) -> bytes:
     return buf.getvalue()
 
 
-def test_photo_cache_hit_and_override(tmp_path: Path):
+def test_photo_cache_hit_and_override(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("PEXELS_API_KEY", raising=False)
     manifest_path = tmp_path / "data" / "photo_manifest.json"
     images_dir = tmp_path / "build" / "images"
     fallback_path = tmp_path / "assets" / "fallback-city.jpg"

@@ -7,11 +7,13 @@ from confwall.cli import run_refresh
 
 
 def test_integration_refresh_workflow(tmp_path: Path, monkeypatch):
+    monkeypatch.delenv("PEXELS_API_KEY", raising=False)
     config_file = tmp_path / "config.yml"
     config_file.write_text(
         """
 window_months: 4
 slide_seconds: 15
+auto_discover: false
 venues:
   mlsys:
     aliases: [MLSys]
@@ -44,6 +46,7 @@ venues:
         output_dir=output_dir,
         now_arg=now_str,
         verbose=True,
+        dotenv_path=None,
     )
     assert res1 == 0
 
@@ -76,6 +79,7 @@ venues:
         output_dir=output_dir,
         now_arg=now_str,
         verbose=False,
+        dotenv_path=None,
     )
     assert res2 == 0
 
@@ -90,6 +94,7 @@ venues:
         output_dir=output_dir,
         now_arg=now_str,
         verbose=False,
+        dotenv_path=None,
     )
     assert res3 == 1
     # Prior build directory must still exist and contain slides.json

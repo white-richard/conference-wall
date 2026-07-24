@@ -1,13 +1,34 @@
-"""Tests for config loading and alias resolution."""
+"""Tests for config loading, dotenv parsing, and alias resolution."""
 
+import os
 from pathlib import Path
 
 import pytest
 
 from confwall.config import (
     load_config,
+    load_dotenv,
     load_photo_overrides,
 )
+
+
+def test_load_dotenv(tmp_path: Path, monkeypatch):
+    dotenv_file = tmp_path / ".env"
+    dotenv_file.write_text(
+        """
+# Comment line
+PEXELS_API_KEY="test_key_from_env_file"
+OTHER_SETTING=12345
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("PEXELS_API_KEY", raising=False)
+    monkeypatch.delenv("OTHER_SETTING", raising=False)
+
+    load_dotenv(dotenv_file)
+
+    assert os.environ.get("PEXELS_API_KEY") == "test_key_from_env_file"
+    assert os.environ.get("OTHER_SETTING") == "12345"
 
 
 def test_load_config_file_not_found(tmp_path: Path):

@@ -70,6 +70,40 @@ html, body {
   pointer-events: none;
 }
 
+/* Top Right Controls */
+.top-controls {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.8rem;
+}
+
+.control-btn {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--pill-border);
+  color: var(--text-primary);
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
 /* Upper Left Header */
 .slide-header {
   position: relative;
@@ -236,6 +270,10 @@ html, body {
   }
   .deadline-box {
     font-size: 1.1rem;
+  }
+  .top-controls {
+    top: 1rem;
+    right: 1rem;
   }
 }
 

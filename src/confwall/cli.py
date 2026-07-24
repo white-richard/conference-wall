@@ -10,7 +10,7 @@ from dateutil.parser import parse as parse_iso_datetime
 
 from confwall import __version__
 from confwall.conference_source import CCFConferenceSource
-from confwall.config import load_config, load_photo_overrides
+from confwall.config import load_config, load_dotenv, load_photo_overrides
 from confwall.deadlines import is_within_four_months, select_next_deadline
 from confwall.locations import parse_location
 from confwall.models import Slide
@@ -39,11 +39,15 @@ def run_refresh(
     verbose: bool = False,
     snapshot_zip_bytes: bytes | None = None,
     photo_manager_override: PhotoManager | None = None,
+    dotenv_path: str | Path | None = ".env",
 ) -> int:
     """
     Execute the refresh workflow.
     Returns 0 on success, non-zero on failure.
     """
+    if dotenv_path:
+        load_dotenv(dotenv_path)
+
     setup_logging(verbose)
 
     if now_arg:
@@ -67,7 +71,7 @@ def run_refresh(
         return 1
 
     try:
-        config = load_config(config_path)
+        config = load_config(config_path, dotenv_path=dotenv_path)
     except Exception as e:
         logger.error(f"Failed to load configuration from {config_path}: {e}")
         return 1
@@ -196,6 +200,7 @@ def run_refresh(
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_dotenv()
     parser = argparse.ArgumentParser(
         prog="confwall",
         description="Browser slideshow for upcoming computer science conference deadlines",
