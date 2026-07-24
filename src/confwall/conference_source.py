@@ -112,12 +112,16 @@ class CCFConferenceSource:
 
             title = str(item.get("title", "")).strip()
             filename_stem = Path(source_name).stem.strip()
+            sub = str(item.get("sub", "")).strip().upper()
 
-            venue_id = config.get_venue_id_for_alias(
-                title
-            ) or config.get_venue_id_for_alias(filename_stem)
+            venue_id = (
+                config.get_venue_id_for_alias(title)
+                or config.get_venue_id_for_alias(filename_stem)
+                or (title.lower() if title else filename_stem.lower())
+            )
 
-            if not venue_id:
+            focus = config.get_primary_focus(venue_id, sub_category=sub)
+            if not focus:
                 continue
 
             full_name = str(item.get("description", title)).strip() or title
@@ -148,13 +152,14 @@ class CCFConferenceSource:
 
                 edition = ConferenceEdition(
                     venue_id=venue_id,
-                    acronym=title,
+                    acronym=title or filename_stem,
                     full_name=full_name,
                     year=year,
                     link=link,
                     timeline=timeline,
                     timezone=str(tz_str) if tz_str else None,
                     place=place,
+                    sub=sub,
                 )
                 matched_editions.append(edition)
 

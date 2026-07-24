@@ -80,6 +80,7 @@ class ConferenceEdition:
     timeline: tuple[dict[str, Any], ...]
     timezone: str | None
     place: str
+    sub: str | None = None
 
 
 @dataclass(frozen=True)

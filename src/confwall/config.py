@@ -6,6 +6,22 @@ from typing import Any
 
 import yaml
 
+CCF_SUB_MAP = {
+    # Machine Learning / AI
+    "AI": "Machine Learning",
+    "ML": "Machine Learning",
+    # HCI
+    "HI": "HCI",
+    "HCI": "HCI",
+    # Software Systems
+    "SYS": "Software Systems",
+    "DS": "Software Systems",
+    "SE": "Software Systems",
+    "SC": "Software Systems",
+    "NW": "Software Systems",
+    "DB": "Software Systems",
+}
+
 
 @dataclass(frozen=True)
 class VenueConfig:
@@ -32,6 +48,7 @@ class Config:
     window_months: int = 4
     slide_seconds: int = 15
     display_timezone: str = "PST"
+    auto_discover: bool = True
     venues: dict[str, VenueConfig] = field(default_factory=dict)
     location_overrides: dict[str, LocationOverride] = field(default_factory=dict)
     alias_map: dict[str, str] = field(default_factory=dict)
@@ -40,6 +57,20 @@ class Config:
         """Resolve a venue acronym/alias to its canonical lowercase venue ID."""
         key = name.strip().lower()
         return self.alias_map.get(key)
+
+    def get_primary_focus(self, venue_id: str, sub_category: str | None = None) -> str | None:
+        """
+        Determine primary focus for a venue ID or sub category.
+        Looks up explicit venue config first, then falls back to auto_discover sub category mapping.
+        """
+        if venue_id in self.venues:
+            return self.venues[venue_id].primary_focus
+
+        if self.auto_discover and sub_category:
+            clean_sub = sub_category.strip().upper()
+            return CCF_SUB_MAP.get(clean_sub)
+
+        return None
 
 
 def load_config(path: str | Path) -> Config:
@@ -54,6 +85,7 @@ def load_config(path: str | Path) -> Config:
     window_months = int(data.get("window_months", 4))
     slide_seconds = int(data.get("slide_seconds", 15))
     display_timezone = str(data.get("display_timezone", "PST")).strip()
+    auto_discover = bool(data.get("auto_discover", True))
 
     venues: dict[str, VenueConfig] = {}
     alias_map: dict[str, str] = {}
@@ -90,6 +122,7 @@ def load_config(path: str | Path) -> Config:
         window_months=window_months,
         slide_seconds=slide_seconds,
         display_timezone=display_timezone,
+        auto_discover=auto_discover,
         venues=venues,
         location_overrides=location_overrides,
         alias_map=alias_map,

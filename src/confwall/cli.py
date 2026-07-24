@@ -109,8 +109,8 @@ def run_refresh(
     downloaded_photos_count = 0
 
     for ed in editions:
-        venue_cfg = config.venues.get(ed.venue_id)
-        if not venue_cfg:
+        primary_focus = config.get_primary_focus(ed.venue_id, ed.sub)
+        if not primary_focus:
             continue
 
         d_info = select_next_deadline(
@@ -162,7 +162,7 @@ def run_refresh(
             location_display=loc.display_place,
             city=loc.city,
             country=loc.country,
-            primary_focus=venue_cfg.primary_focus,
+            primary_focus=primary_focus,
             photo_path=photo_path,
             photo_credit=photo_credit,
             photo_source_url=source_url,
