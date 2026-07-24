@@ -1,9 +1,10 @@
-"""Static site generator with atomic directory replacement for confwall."""
+"""Static site generator with cross-platform atomic directory replacement for confwall."""
 
 import json
 import logging
 import shutil
 import tempfile
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -15,7 +16,23 @@ logger = logging.getLogger(__name__)
 STATIC_DIR = Path(__file__).parent / "static"
 
 
+def _safe_rmtree(path: Path) -> None:
+    """Helper to remove directory trees safely, handling Windows file lock delays."""
+    if not path.exists():
+        return
+    try:
+        shutil.rmtree(path)
+    except Exception:
+        time.sleep(0.1)
+        try:
+            shutil.rmtree(path, ignore_errors=True)
+        except Exception as e:
+            logger.warning(f"Could not remove directory {path}: {e}")
+
+
 def slide_to_dict(slide: Slide) -> dict[str, Any]:
+    """Convert slide dataclass to dictionary, ensuring POSIX forward slashes for web photo paths."""
+    photo_path = Path(slide.photo_path).as_posix()
     return {
         "id": slide.id,
         "acronym": slide.acronym,
@@ -29,7 +46,7 @@ def slide_to_dict(slide: Slide) -> dict[str, Any]:
         "city": slide.city,
         "country": slide.country,
         "primary_focus": slide.primary_focus,
-        "photo_path": slide.photo_path,
+        "photo_path": photo_path,
         "photo_credit": slide.photo_credit,
         "photo_source_url": slide.photo_source_url,
     }
@@ -42,8 +59,9 @@ def build_site_atomically(
     slide_seconds: int = 15,
 ) -> None:
     """
-    Generate static site into a temporary directory, then atomically replace target output_dir.
-    If generation fails, output_dir remains untouched.
+    Generate static site into a temporary directory, then replace target output_dir.
+    Supports atomic replacement on POSIX and fallback directory sync on Windows.
+    If generation fails, existing output_dir remains untouched.
     """
     output_dir = Path(output_dir)
     images_dir = Path(images_dir)
@@ -82,22 +100,28 @@ def build_site_atomically(
         with slides_json_path.open("w", encoding="utf-8") as f:
             json.dump(slides_data, f, indent=2, ensure_ascii=False)
 
-        # 4. Atomic replace output_dir
+        # 4. Replace output_dir safely across OS platforms
         if output_dir.exists():
-            # Backup old dir in case move fails
             old_backup = parent_dir / f".confwall_old_{output_dir.name}"
-            if old_backup.exists():
-                shutil.rmtree(old_backup)
-            output_dir.rename(old_backup)
+            _safe_rmtree(old_backup)
+            renamed = False
             try:
-                shutil.copytree(tmp_dir, output_dir)
-                shutil.rmtree(old_backup)
+                output_dir.rename(old_backup)
+                renamed = True
             except Exception as e:
-                # Restore backup on failure
-                if output_dir.exists():
-                    shutil.rmtree(output_dir)
-                old_backup.rename(output_dir)
-                raise RuntimeError(f"Atomic build failed to replace {output_dir}: {e}") from e
+                logger.debug(f"Direct rename unsupported or locked, using directory sync: {e}")
+
+            if renamed:
+                try:
+                    shutil.copytree(tmp_dir, output_dir)
+                    _safe_rmtree(old_backup)
+                except Exception as e:
+                    if output_dir.exists():
+                        _safe_rmtree(output_dir)
+                    old_backup.rename(output_dir)
+                    raise RuntimeError(f"Atomic build failed to replace {output_dir}: {e}") from e
+            else:
+                shutil.copytree(tmp_dir, output_dir, dirs_exist_ok=True)
         else:
             shutil.copytree(tmp_dir, output_dir)
 

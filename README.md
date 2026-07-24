@@ -1,6 +1,6 @@
-# Conference Wall
+# confwall 🌆
 
-`confwall` is a lightweight Python CLI application and digital signage slideshow that displays upcoming software-systems, HCI, and machine-learning conference submission deadlines as a full-screen browser slideshow.
+`confwall` is a lightweight, cross-platform Python 3.12 CLI application and digital signage slideshow that displays upcoming software-systems, HCI, and machine-learning conference submission deadlines as a full-screen browser slideshow.
 
 ![confwall preview](assets/fallback-city.jpg)
 
@@ -10,9 +10,9 @@
 
 - **Full-screen City Signage**: Displays a high-resolution background photograph for each conference city.
 - **Strict 4-Month Calendar Window**: Shows paper submission deadlines occurring from the current time through exactly four calendar months in the future.
-- **Topic Allowlisting**: Explicitly configures primary focus areas (_Software Systems_, _HCI_, _Machine Learning_) per venue via `config.yml`.
-- **CCF-Deadlines Integration**: Downloads snapshot repositories in a single request and parses full-paper deadlines (abstract-only deadlines are ignored).
-- **Timezone Awareness**: Normalizes deadlines to UTC for sorting and filtering while retaining original display timezones (e.g. AoE, UTC-8, UTC+5:30).
+- **Zero-Manual-Labeling Auto-Discovery**: Automatically discovers and classifies conferences across *Software Systems*, *HCI*, and *Machine Learning* based on upstream category metadata.
+- **Cross-Platform Compatibility**: Fully compatible with macOS, Windows (PowerShell/CMD), and Linux.
+- **Timezone & PST Conversion**: Automatically converts all deadline display times to Pacific Time (PST/PDT) while retaining original source timezone notes.
 - **Photo Overrides & Caching**: Supports Pexels API search, persistent manifest caching (`data/photo_manifest.json`), and manual photo overrides (`photo_overrides.yml`).
 - **Resilient Atomic Updates**: Atomic directory replacement ensures that an update failure preserves the last working slideshow without down-time.
 
@@ -20,20 +20,35 @@
 
 ## 1. Installation
 
-### Using `uv`
+### Using `uv` (Recommended)
 
+**macOS / Linux**:
 ```bash
 uv venv --python 3.12 .venv
 source .venv/bin/activate
+uv pip install -e ".[dev]"
+```
 
+**Windows (PowerShell)**:
+```powershell
+uv venv --python 3.12 .venv
+.\.venv\Scripts\Activate.ps1
 uv pip install -e ".[dev]"
 ```
 
 ### Standard Python `venv`
 
+**macOS / Linux**:
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+**Windows (CMD / PowerShell)**:
+```cmd
+python -m venv .venv
+.\.venv\Scripts\activate
 pip install -e ".[dev]"
 ```
 
@@ -45,9 +60,22 @@ pip install -e ".[dev]"
 2. Request an API key from your Pexels dashboard.
 3. Export your key in your shell environment:
 
+**macOS / Linux**:
 ```bash
 export PEXELS_API_KEY="your_pexels_api_key_here"
 ```
+
+**Windows (PowerShell)**:
+```powershell
+$env:PEXELS_API_KEY="your_pexels_api_key_here"
+```
+
+**Windows (CMD)**:
+```cmd
+set PEXELS_API_KEY="your_pexels_api_key_here"
+```
+
+*Note: The API key is read exclusively from `PEXELS_API_KEY` and is never written to configuration, logs, or generated static assets.*
 
 ---
 
@@ -55,8 +83,14 @@ export PEXELS_API_KEY="your_pexels_api_key_here"
 
 Copy the provided example file to `config.yml`:
 
+**macOS / Linux**:
 ```bash
 cp config.example.yml config.yml
+```
+
+**Windows**:
+```cmd
+copy config.example.yml config.yml
 ```
 
 Example configuration structure:
@@ -64,6 +98,8 @@ Example configuration structure:
 ```yaml
 window_months: 4
 slide_seconds: 15
+display_timezone: PST
+auto_discover: true
 venues:
   osdi:
     aliases: [OSDI]
@@ -104,8 +140,14 @@ confwall serve --directory build --host 127.0.0.1 --port 8000
 
 1. Open `http://127.0.0.1:8000` in your web browser.
 2. Press **`f`** on your keyboard to enter fullscreen mode.
-3. On dedicated display hardware (e.g. Raspberry Pi connected to a TV), launch Chrome or Chromium in kiosk mode:
+3. On dedicated display hardware (e.g. Raspberry Pi or Windows Kiosk display), launch Chrome or Edge in kiosk mode:
 
+**Windows (Command Prompt / PowerShell)**:
+```cmd
+start msedge --kiosk http://127.0.0.1:8000 --edge-kiosk-type=fullscreen
+```
+
+**Linux / macOS**:
 ```bash
 chromium-browser --kiosk --noerrdialogs --disable-infobars http://127.0.0.1:8000
 ```
@@ -120,12 +162,6 @@ chromium-browser --kiosk --noerrdialogs --disable-infobars http://127.0.0.1:8000
 ---
 
 ## 6. Customization & Photo Overrides
-
-### Editing the Venue Allowlist
-
-Modify `config.yml` to add or remove venue IDs and set their `primary_focus` (_Software Systems_, _HCI_, _Machine Learning_).
-
-### Pinning or Replacing a City Photo
 
 Create `photo_overrides.yml` to pin a specific Pexels photo ID or use a local image file:
 
@@ -157,9 +193,19 @@ uv run pytest -m live
 
 ---
 
-## 8. Deployment as a Systemd Service
+## 8. Deployment Options
 
-### `confwall.service` (`/etc/systemd/system/confwall.service`)
+### Windows Task Scheduler (Windows Service / Refresh)
+
+You can run `confwall refresh` automatically twice a day using Windows Task Scheduler:
+
+```powershell
+schtasks /Create /TN "ConfwallRefresh" /TR "C:\path\to\confwall\.venv\Scripts\confwall.exe refresh" /SC DAILY /ST 00:00 /RI 720 /DU 24:00
+```
+
+### Linux Systemd Service
+
+See systemd unit samples for Linux background deployment:
 
 ```ini
 [Unit]
@@ -172,46 +218,9 @@ User=pi
 WorkingDirectory=/home/pi/confwall
 ExecStart=/home/pi/confwall/.venv/bin/confwall serve --host 0.0.0.0 --port 8000
 Restart=always
-RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-```
-
-### `confwall-refresh.service` (`/etc/systemd/system/confwall-refresh.service`)
-
-```ini
-[Unit]
-Description=Confwall Deadline Refresh Job
-
-[Service]
-Type=oneshot
-User=pi
-WorkingDirectory=/home/pi/confwall
-Environment="PEXELS_API_KEY=your_key_here"
-ExecStart=/home/pi/confwall/.venv/bin/confwall refresh
-```
-
-### `confwall-refresh.timer` (`/etc/systemd/system/confwall-refresh.timer`)
-
-```ini
-[Unit]
-Description=Run Confwall Refresh twice daily
-
-[Timer]
-OnCalendar=*-*-* 00,12:00:00
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-```
-
-Enable and start the timer:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now confwall.service
-sudo systemctl enable --now confwall-refresh.timer
 ```
 
 ---
