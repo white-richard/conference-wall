@@ -109,7 +109,9 @@ def test_browser_slideshow(local_server):
         acronym_text = page.text_content("#slide-acronym")
         assert acronym_text in ("MLSys", "OSDI")
 
-        # Required caption text
+        # Required header and caption text
+        assert page.is_visible(".site-header-badge")
+        assert "Upcoming Conferences" in page.text_content(".site-header-badge")
         assert page.is_visible("#slide-location")
         assert page.is_visible("#slide-deadline")
         assert page.is_visible("#photo-credit")

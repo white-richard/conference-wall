@@ -28,7 +28,18 @@
 
     <!-- Header (Upper Left) -->
     <header class="slide-header">
-      <div class="focus-pill" id="slide-focus"></div>
+      <div class="header-badges">
+        <div class="site-header-badge">
+          <svg class="calendar-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Upcoming Conferences</span>
+        </div>
+        <div class="focus-pill" id="slide-focus"></div>
+      </div>
       <h1 class="conference-title">
         <a id="slide-url" href="#" target="_blank" rel="noopener noreferrer">
           <span id="slide-acronym"></span>
@@ -55,6 +66,15 @@
 
     <!-- Empty State -->
     <div id="empty-state" class="empty-state hidden">
+      <div class="site-header-badge">
+        <svg class="calendar-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Upcoming Conferences</span>
+      </div>
       <div class="empty-message">
         No selected conference submission deadlines in the next four months.
       </div>
