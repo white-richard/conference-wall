@@ -101,3 +101,104 @@ venues:
     assert (output_dir / "slides.json").exists()
     data_after_fail = json.loads((output_dir / "slides.json").read_text(encoding="utf-8"))
     assert len(data_after_fail["slides"]) == len(slides)
+
+
+def test_refresh_workflow_for_all_new_groups(tmp_path: Path, monkeypatch):
+    monkeypatch.delenv("PEXELS_API_KEY", raising=False)
+    config_file = tmp_path / "config.yml"
+    config_file.write_text(
+        """
+window_months: 4
+auto_discover: true
+venues:
+  ismb:
+    aliases: [ISMB]
+    primary_focus: Bioinformatics
+  recomb:
+    aliases: [RECOMB]
+    primary_focus: Computational Biology
+  cgo:
+    aliases: [CGO, IEEE/ACM CGO]
+    primary_focus: Optimization
+  cosyne:
+    aliases: [COSYNE]
+    primary_focus: Computational Neuroscience
+""",
+        encoding="utf-8",
+    )
+
+    from confwall.conference_source import CCFConferenceSource
+    from confwall.models import ConferenceEdition
+
+    mock_editions = [
+        ConferenceEdition(
+            venue_id="ismb",
+            acronym="ISMB",
+            full_name="Intelligent Systems for Molecular Biology",
+            year=2026,
+            link="https://ismb.org",
+            timeline=({"deadline": "2026-09-01 23:59:59"},),
+            timezone="UTC",
+            place="Boston, MA, USA",
+            sub="BIO",
+        ),
+        ConferenceEdition(
+            venue_id="recomb",
+            acronym="RECOMB",
+            full_name="Research in Computational Molecular Biology",
+            year=2026,
+            link="https://recomb.org",
+            timeline=({"deadline": "2026-09-10 23:59:59"},),
+            timezone="UTC",
+            place="Thessaloniki, Greece",
+            sub="CB",
+        ),
+        ConferenceEdition(
+            venue_id="cgo",
+            acronym="IEEE/ACM CGO",
+            full_name="Code Generation and Optimization",
+            year=2027,
+            link="https://cgo.org",
+            timeline=({"deadline": "2026-09-11 23:59:59"},),
+            timezone="UTC",
+            place="Salt Lake City, UT, USA",
+            sub="OPT",
+        ),
+        ConferenceEdition(
+            venue_id="cosyne",
+            acronym="COSYNE",
+            full_name="Computational and Systems Neuroscience",
+            year=2027,
+            link="https://cosyne.org",
+            timeline=({"deadline": "2026-10-01 23:59:59"},),
+            timezone="UTC",
+            place="Denver, CO, USA",
+            sub="CNS",
+        ),
+    ]
+
+    def mock_load_editions(self, config, snapshot_zip_bytes=None):
+        return mock_editions, len(mock_editions)
+
+    monkeypatch.setattr(CCFConferenceSource, "load_editions", mock_load_editions)
+
+    output_dir = tmp_path / "build"
+    res = run_refresh(
+        config_path=config_file,
+        output_dir=output_dir,
+        now_arg="2026-07-28T12:00:00Z",
+        verbose=True,
+        dotenv_path=None,
+    )
+    assert res == 0
+
+    slides_data = json.loads((output_dir / "slides.json").read_text(encoding="utf-8"))
+    slides = slides_data["slides"]
+    assert len(slides) == 4
+
+    focuses = {s["primary_focus"] for s in slides}
+    assert "Bioinformatics" in focuses
+    assert "Computational Biology" in focuses
+    assert "Optimization" in focuses
+    assert "Computational Neuroscience" in focuses
+

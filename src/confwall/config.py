@@ -21,6 +21,22 @@ CCF_SUB_MAP = {
     "SC": "Software Systems",
     "NW": "Software Systems",
     "DB": "Software Systems",
+    # Bioinformatics
+    "BIO": "Bioinformatics",
+    "BIOINFORMATICS": "Bioinformatics",
+    # Computational Biology
+    "CB": "Computational Biology",
+    "COMPBIO": "Computational Biology",
+    "COMPUTATIONAL BIOLOGY": "Computational Biology",
+    "BCB": "Computational Biology",
+    # Optimization
+    "OPT": "Optimization",
+    "OPTIMIZATION": "Optimization",
+    # Computational Neuroscience
+    "CNS": "Computational Neuroscience",
+    "NEURO": "Computational Neuroscience",
+    "COMPNEURO": "Computational Neuroscience",
+    "COMPUTATIONAL NEUROSCIENCE": "Computational Neuroscience",
 }
 
 

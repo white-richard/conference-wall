@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from confwall.config import (
+    Config,
     load_config,
     load_dotenv,
     load_photo_overrides,
@@ -99,3 +100,33 @@ photos:
 
     # Non-existent file
     assert load_photo_overrides(tmp_path / "missing.yml") == {}
+
+
+def test_ccf_sub_map_new_groups():
+    cfg = Config(auto_discover=True)
+    assert cfg.get_primary_focus("unknown_venue", sub_category="BIO") == "Bioinformatics"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="BIOINFORMATICS") == "Bioinformatics"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="CB") == "Computational Biology"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="COMPBIO") == "Computational Biology"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="COMPUTATIONAL BIOLOGY") == "Computational Biology"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="BCB") == "Computational Biology"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="OPT") == "Optimization"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="OPTIMIZATION") == "Optimization"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="CNS") == "Computational Neuroscience"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="NEURO") == "Computational Neuroscience"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="COMPNEURO") == "Computational Neuroscience"
+    assert cfg.get_primary_focus("unknown_venue", sub_category="COMPUTATIONAL NEUROSCIENCE") == "Computational Neuroscience"
+
+
+def test_root_config_file():
+    root_cfg_path = Path(__file__).parent.parent / "config.yml"
+    cfg = load_config(root_cfg_path)
+    assert "ismb" in cfg.venues
+    assert cfg.venues["ismb"].primary_focus == "Bioinformatics"
+    assert "recomb" in cfg.venues
+    assert cfg.venues["recomb"].primary_focus == "Computational Biology"
+    assert "ipco" in cfg.venues
+    assert cfg.venues["ipco"].primary_focus == "Optimization"
+    assert "cosyne" in cfg.venues
+    assert cfg.venues["cosyne"].primary_focus == "Computational Neuroscience"
+

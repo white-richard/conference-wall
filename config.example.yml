@@ -101,3 +101,60 @@ venues:
   rlc:
     aliases: [RLC]
     primary_focus: Machine Learning
+  ismb:
+    aliases: [ISMB, ISMB/ECCB]
+    primary_focus: Bioinformatics
+  bibm:
+    aliases: [BIBM, IEEE BIBM]
+    primary_focus: Bioinformatics
+  eccb:
+    aliases: [ECCB]
+    primary_focus: Bioinformatics
+  giw:
+    aliases: [GIW]
+    primary_focus: Bioinformatics
+  apbc:
+    aliases: [APBC]
+    primary_focus: Bioinformatics
+  recomb:
+    aliases: [RECOMB]
+    primary_focus: Computational Biology
+  bcb:
+    aliases: [ACM-BCB, BCB, ACM BCB]
+    primary_focus: Computational Biology
+  wabi:
+    aliases: [WABI]
+    primary_focus: Computational Biology
+  isbra:
+    aliases: [ISBRA]
+    primary_focus: Computational Biology
+  ipco:
+    aliases: [IPCO]
+    primary_focus: Optimization
+  iccopt:
+    aliases: [ICCOPT]
+    primary_focus: Optimization
+  opt:
+    aliases: [OPT, OPTML]
+    primary_focus: Optimization
+  mopta:
+    aliases: [MOPTA]
+    primary_focus: Optimization
+  cgo:
+    aliases: [CGO, IEEE/ACM CGO]
+    primary_focus: Optimization
+  gecco:
+    aliases: [GECCO]
+    primary_focus: Optimization
+  cosyne:
+    aliases: [COSYNE, Cosyne]
+    primary_focus: Computational Neuroscience
+  cns:
+    aliases: [CNS, OCNS]
+    primary_focus: Computational Neuroscience
+  fnns:
+    aliases: [FNNS, FrontNet]
+    primary_focus: Computational Neuroscience
+  inbc:
+    aliases: [INBC]
+    primary_focus: Computational Neuroscience
