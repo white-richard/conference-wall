@@ -25,7 +25,6 @@ class Slide:
     publisher_tag: str = "Other"
     format_tag: str = "In-Person"
     abstract_deadline_text: str | None = None
-    keywords: tuple[str, ...] = ()
     rank_core: str | None = None
     rank_ccf: str | None = None
 

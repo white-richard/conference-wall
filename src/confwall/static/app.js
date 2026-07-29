@@ -72,7 +72,6 @@
     const publisherEl = document.getElementById("slide-publisher");
     const formatEl = document.getElementById("slide-format");
     const ranksEl = document.getElementById("slide-ranks");
-    const keywordsEl = document.getElementById("slide-keywords");
     const locationEl = document.getElementById("slide-location");
     const deadlineEl = document.getElementById("slide-deadline");
     const commentEl = document.getElementById("slide-comment");
@@ -130,19 +129,6 @@
         ranksHtml += `<span class="rank-badge rank-ccf">CCF ${slide.rank_ccf}</span>`;
       }
       ranksEl.innerHTML = ranksHtml;
-    }
-
-    // Keywords Tags
-    if (keywordsEl) {
-      if (Array.isArray(slide.keywords) && slide.keywords.length > 0) {
-        keywordsEl.innerHTML = slide.keywords
-          .map((kw) => `<span class="keyword-tag">${kw}</span>`)
-          .join("");
-        keywordsEl.classList.remove("hidden");
-      } else {
-        keywordsEl.innerHTML = "";
-        keywordsEl.classList.add("hidden");
-      }
     }
 
     if (locationEl) locationEl.textContent = slide.location_display;

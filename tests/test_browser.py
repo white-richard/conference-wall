@@ -51,7 +51,6 @@ def local_server(tmp_path: Path):
                 "abstract_deadline_text": "In 3 Days · 23:59 AoE",
                 "publisher_tag": "ACM",
                 "format_tag": "In-Person",
-                "keywords": ["ML Systems", "Hardware Acceleration", "Efficient AI"],
                 "rank_core": "A*",
                 "rank_ccf": "A",
                 "location_display": "Austin, USA",
@@ -74,7 +73,6 @@ def local_server(tmp_path: Path):
                 "abstract_deadline_text": "October 20, 2026 · 23:59 UTC-8",
                 "publisher_tag": "USENIX",
                 "format_tag": "Hybrid",
-                "keywords": ["Operating Systems", "Infrastructure", "Systems"],
                 "rank_core": "A*",
                 "rank_ccf": "A",
                 "location_display": "Carlsbad, USA",
@@ -141,10 +139,6 @@ def test_browser_slideshow(local_server):
 
         assert page.is_visible("#slide-ranks")
         assert "CORE A*" in page.text_content("#slide-ranks")
-
-        assert page.is_visible("#slide-keywords")
-        keywords_html = page.inner_html("#slide-keywords")
-        assert "keyword-tag" in keywords_html
 
         assert page.is_visible("#slide-abstract-box")
         assert "Abstract due:" in page.text_content("#slide-abstract-box")

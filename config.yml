@@ -5,208 +5,156 @@ venues:
   osdi:
     aliases: [OSDI]
     primary_focus: Software Systems
-    keywords: ["Operating Systems", "Systems Infrastructure", "Empirical Evaluation"]
   sosp:
     aliases: [SOSP]
     primary_focus: Software Systems
-    keywords: ["Systems Architecture", "Distributed Systems", "Operating Systems"]
   eurosys:
     aliases: [EuroSys, EUROSYS]
     primary_focus: Software Systems
-    keywords: ["Systems Software", "Virtualization", "Cloud Systems"]
   nsdi:
     aliases: [NSDI]
     primary_focus: Software Systems
-    keywords: ["Networked Systems", "Distributed Protocols", "Network Infrastructure"]
   fast:
     aliases: [FAST]
     primary_focus: Software Systems
-    keywords: ["File & Storage Systems", "Non-Volatile Memory", "Hardware/Software"]
   asplos:
     aliases: [ASPLOS]
     primary_focus: Software Systems
-    keywords: ["Computer Architecture", "Operating Systems", "Compilers & Hardware"]
   atc:
     aliases: [ATC, USENIX ATC, SIGOPS ATC]
     primary_focus: Software Systems
-    keywords: ["Systems Research", "Operating Systems", "Applications & Tools"]
   mobisys:
     aliases: [MobiSys, MOBISYS]
     primary_focus: Software Systems
-    keywords: ["Mobile Systems", "Wireless & Sensing", "Edge Computing"]
   middleware:
     aliases: [Middleware, MIDDLEWARE]
     primary_focus: Software Systems
-    keywords: ["Distributed Systems", "Middleware Infrastructure", "Cloud Services"]
   icse:
     aliases: [ICSE]
     primary_focus: Software Systems
-    keywords: ["Software Engineering", "Empirical Evaluation", "Tool Papers & Artifacts"]
   fse:
     aliases: [FSE, ESEC/FSE]
     primary_focus: Software Systems
-    keywords: ["Software Engineering", "Program Analysis", "Software Tools"]
   ase:
     aliases: [ASE]
     primary_focus: Software Systems
-    keywords: ["Automated Software Eng", "Program Synthesis", "Software Verification"]
   issta:
     aliases: [ISSTA]
     primary_focus: Software Systems
-    keywords: ["Software Testing", "Program Analysis", "Vulnerability Discovery"]
   chi:
     aliases: [CHI]
     primary_focus: HCI
-    keywords: ["Human Factors", "User Experience", "Interaction Design", "User Studies"]
   uist:
     aliases: [UIST]
     primary_focus: HCI
-    keywords: ["User Interface Tech", "Hardware Devices", "Software Systems"]
   cscw:
     aliases: [CSCW]
     primary_focus: HCI
-    keywords: ["Social Computing", "Collaborative Work", "Empirical Studies"]
   iui:
     aliases: [IUI]
     primary_focus: HCI
-    keywords: ["Intelligent UI", "Human-AI Interaction", "Adaptive User Interfaces"]
   ubicomp:
     aliases: [UbiComp, UBICOMP, IMWUT, UbiComp/ISWC]
     primary_focus: HCI
-    keywords: ["Ubiquitous Computing", "Sensing & Wearables", "Mobile Interfaces"]
   dis:
     aliases: [DIS]
     primary_focus: HCI
-    keywords: ["Designing Interactive Systems", "Design Methods", "User Experience"]
   mobilehci:
     aliases: [MobileHCI, MOBILEHCI]
     primary_focus: HCI
-    keywords: ["Mobile Interaction", "Wearables & Devices", "User Studies"]
   tei:
     aliases: [TEI]
     primary_focus: HCI
-    keywords: ["Tangible Interaction", "Embedded Systems", "Physical Computing"]
   facct:
     aliases: [FAccT, FAT*]
     primary_focus: HCI
-    keywords: ["Fairness & Transparency", "Algorithmic Accountability", "AI Policy & Ethics"]
   neurips:
     aliases: [NeurIPS, NIPS]
     primary_focus: Machine Learning
-    keywords: ["Deep Learning", "Machine Learning Theory", "Optimization & Neural Models"]
   icml:
     aliases: [ICML]
     primary_focus: Machine Learning
-    keywords: ["Machine Learning Theory", "Reinforcement Learning", "Algorithmic ML"]
   iclr:
     aliases: [ICLR]
     primary_focus: Machine Learning
-    keywords: ["Representation Learning", "Deep Neural Architectures", "Generative Models"]
   aaai:
     aliases: [AAAI]
     primary_focus: Machine Learning
-    keywords: ["General AI", "Knowledge Representation", "Planning & Search", "Applications"]
   aistats:
     aliases: [AISTATS]
     primary_focus: Machine Learning
-    keywords: ["Statistical Machine Learning", "High-Dimensional Stats", "Probabilistic Models"]
   uai:
     aliases: [UAI]
     primary_focus: Machine Learning
-    keywords: ["Uncertainty in AI", "Bayesian Inference", "Probabilistic Graphical Models"]
   colt:
     aliases: [COLT]
     primary_focus: Machine Learning
-    keywords: ["Learning Theory", "Mathematical Foundations", "Computational Complexity"]
   kdd:
     aliases: [KDD, SIGKDD]
     primary_focus: Machine Learning
-    keywords: ["Data Mining", "Knowledge Discovery", "Big Data Applications", "Applied ML"]
   mlsys:
     aliases: [MLSys, MLSYS]
     primary_focus: Machine Learning
-    keywords: ["ML Systems", "Hardware Acceleration", "Efficient Inference & Training"]
   collas:
     aliases: [CoLLAs, COLLAS]
     primary_focus: Machine Learning
-    keywords: ["Lifelong Learning", "Continual Adaptation", "Transfer Learning"]
   rlc:
     aliases: [RLC]
     primary_focus: Machine Learning
-    keywords: ["Reinforcement Learning", "Optimal Control", "Sequential Decision Making"]
   ismb:
     aliases: [ISMB, ISMB/ECCB]
     primary_focus: Bioinformatics
-    keywords: ["Bioinformatics", "Genomics & Transcriptomics", "Structural Biology"]
   bibm:
     aliases: [BIBM, IEEE BIBM]
     primary_focus: Bioinformatics
-    keywords: ["Bioinformatics", "Biomedical Data", "Clinical Informatics & Health"]
   eccb:
     aliases: [ECCB]
     primary_focus: Bioinformatics
-    keywords: ["Computational Biology", "Systems Biology", "Clinical & Genomic Apps"]
   giw:
     aliases: [GIW]
     primary_focus: Bioinformatics
-    keywords: ["Genome Informatics", "Biological Networks", "Sequence Analysis"]
   apbc:
     aliases: [APBC]
     primary_focus: Bioinformatics
-    keywords: ["Bioinformatics Algorithms", "Sequence & Structural Bio", "Genomics"]
   recomb:
     aliases: [RECOMB]
     primary_focus: Computational Biology
-    keywords: ["Computational Molecular Bio", "Genomic Algorithms", "Theoretical Bio"]
   bcb:
     aliases: [ACM-BCB, BCB, ACM BCB]
     primary_focus: Computational Biology
-    keywords: ["Health Informatics", "Computational Biology", "Clinical Applications"]
   wabi:
     aliases: [WABI]
     primary_focus: Computational Biology
-    keywords: ["Algorithms in Bioinformatics", "Sequence Alignment", "Phylogenetics"]
   isbra:
     aliases: [ISBRA]
     primary_focus: Computational Biology
-    keywords: ["Bioinformatics Research", "Biomedical Applications", "Algorithms"]
   ipco:
     aliases: [IPCO]
     primary_focus: Optimization
-    keywords: ["Integer Programming", "Combinatorial Optimization", "Mathematical Proofs"]
   iccopt:
     aliases: [ICCOPT]
     primary_focus: Optimization
-    keywords: ["Continuous Optimization", "Convex & Non-convex Analysis", "Algorithms"]
   opt:
     aliases: [OPT, OPTML]
     primary_focus: Optimization
-    keywords: ["Optimization for ML", "Stochastic Gradient Methods", "Convex Analysis"]
   mopta:
     aliases: [MOPTA]
     primary_focus: Optimization
-    keywords: ["Modeling & Optimization", "Industrial & Operations Research", "Algorithms"]
   cgo:
     aliases: [CGO, IEEE/ACM CGO]
     primary_focus: Optimization
-    keywords: ["Code Generation", "Compiler Optimization", "Hardware Architectures"]
   gecco:
     aliases: [GECCO]
     primary_focus: Optimization
-    keywords: ["Genetic Algorithms", "Evolutionary Computation", "Metaheuristics"]
   cosyne:
     aliases: [COSYNE, Cosyne]
     primary_focus: Computational Neuroscience
-    keywords: ["Computational Neuroscience", "Neural Coding", "Systems Dynamics"]
   cns:
     aliases: [CNS, OCNS]
     primary_focus: Computational Neuroscience
-    keywords: ["Brain Modeling", "Neural Dynamics", "Computational Neuroscience"]
   fnns:
     aliases: [FNNS, FrontNet]
     primary_focus: Computational Neuroscience
-    keywords: ["Network Neuroscience", "Brain Models", "Theoretical Neuroscience"]
   inbc:
     aliases: [INBC]
     primary_focus: Computational Neuroscience
-    keywords: ["Neuroinformatics", "Brain-Computer Interfaces", "Computational Bio"]

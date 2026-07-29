@@ -52,7 +52,6 @@ def slide_to_dict(slide: Slide) -> dict[str, Any]:
         "publisher_tag": slide.publisher_tag,
         "format_tag": slide.format_tag,
         "abstract_deadline_text": slide.abstract_deadline_text,
-        "keywords": list(slide.keywords),
         "rank_core": slide.rank_core,
         "rank_ccf": slide.rank_ccf,
     }

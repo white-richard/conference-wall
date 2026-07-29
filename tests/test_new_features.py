@@ -62,21 +62,6 @@ def test_abstract_deadline_inline_key():
     assert "August 1, 2026" in d_info.abstract_deadline_text
 
 
-def test_config_keywords():
-    config = Config(
-        venues={
-            "osdi": VenueConfig(primary_focus="Software Systems", keywords=("Operating Systems", "Infrastructure")),
-        }
-    )
-    # Explicit keywords
-    kw1 = config.get_keywords("osdi", "Software Systems")
-    assert kw1 == ["Operating Systems", "Infrastructure"]
-
-    # Derived keywords
-    kw2 = config.get_keywords("icml", "Machine Learning", "International Conference on Machine Learning")
-    assert "Machine Learning" in kw2
-
-
 def test_slide_serialization():
     dt = datetime(2026, 10, 15, 23, 59, tzinfo=timezone.utc)
     slide = Slide(
@@ -98,7 +83,6 @@ def test_slide_serialization():
         publisher_tag="USENIX",
         format_tag="In-Person",
         abstract_deadline_text="October 1, 2026 · 23:59 PST",
-        keywords=("Operating Systems", "Infrastructure"),
         rank_core="A*",
         rank_ccf="A",
     )
@@ -106,6 +90,5 @@ def test_slide_serialization():
     assert d["publisher_tag"] == "USENIX"
     assert d["format_tag"] == "In-Person"
     assert d["abstract_deadline_text"] == "October 1, 2026 · 23:59 PST"
-    assert d["keywords"] == ["Operating Systems", "Infrastructure"]
     assert d["rank_core"] == "A*"
     assert d["rank_ccf"] == "A"

@@ -167,13 +167,6 @@ def run_refresh(
 
         format_tag = detect_format(ed.place)
 
-        keywords = config.get_keywords(
-            venue_id=ed.venue_id,
-            primary_focus=primary_focus,
-            description=ed.full_name,
-            sub_category=ed.sub,
-        )
-
         rank_core = ed.rank.get("core") if ed.rank else None
         rank_ccf = ed.rank.get("ccf") if ed.rank else None
 
@@ -197,7 +190,6 @@ def run_refresh(
             publisher_tag=publisher_tag,
             format_tag=format_tag,
             abstract_deadline_text=d_info.abstract_deadline_text,
-            keywords=tuple(keywords),
             rank_core=rank_core,
             rank_ccf=rank_ccf,
         )

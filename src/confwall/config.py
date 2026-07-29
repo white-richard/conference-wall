@@ -66,7 +66,6 @@ def load_dotenv(dotenv_path: str | Path | None = ".env") -> None:
 class VenueConfig:
     primary_focus: str
     aliases: tuple[str, ...] = ()
-    keywords: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -112,59 +111,6 @@ class Config:
 
         return None
 
-    def get_keywords(
-        self,
-        venue_id: str,
-        primary_focus: str,
-        description: str = "",
-        sub_category: str | None = None,
-    ) -> list[str]:
-        """Get or derive paper category/kind keywords for a conference."""
-        if venue_id in self.venues and self.venues[venue_id].keywords:
-            return list(self.venues[venue_id].keywords)
-
-        focus_lower = primary_focus.lower()
-        desc_lower = description.lower()
-
-        keywords: list[str] = []
-
-        if "machine learning" in focus_lower or "ai" in focus_lower:
-            if "system" in desc_lower or venue_id == "mlsys":
-                keywords = ["Systems", "Machine Learning", "Applications"]
-            elif "vision" in desc_lower or "image" in desc_lower:
-                keywords = ["Computer Vision", "Applications", "Theory"]
-            else:
-                keywords = ["Machine Learning", "Algorithms", "Theory & Apps"]
-
-        elif "software systems" in focus_lower:
-            if any(w in desc_lower for w in ["operating", "osdi", "sosp"]):
-                keywords = ["Operating Systems", "Infrastructure", "Systems"]
-            elif any(w in desc_lower for w in ["software", "engineering", "icse", "fse", "ase"]):
-                keywords = ["Software Engineering", "Applications", "Tools"]
-            elif any(w in desc_lower for w in ["storage", "fast"]):
-                keywords = ["Storage", "Systems", "Applications"]
-            elif any(w in desc_lower for w in ["network", "nsdi"]):
-                keywords = ["Networking", "Systems", "Infrastructure"]
-            else:
-                keywords = ["Software Systems", "Applications", "Infrastructure"]
-
-        elif "hci" in focus_lower:
-            keywords = ["Human Factors", "User Experience", "Applications"]
-
-        elif "bioinformatics" in focus_lower or "computational biology" in focus_lower:
-            keywords = ["Bioinformatics", "Clinical & Genomic", "Applications"]
-
-        elif "optimization" in focus_lower:
-            keywords = ["Optimization", "Algorithms", "Theory & Apps"]
-
-        elif "neuroscience" in focus_lower:
-            keywords = ["Neuroscience", "Modeling", "Clinical & Theory"]
-
-        else:
-            keywords = [primary_focus, "Applications", "Theory"]
-
-        return keywords
-
 
 def load_config(path: str | Path, dotenv_path: str | Path | None = ".env") -> Config:
     """Load configuration from a YAML file."""
@@ -194,12 +140,8 @@ def load_config(path: str | Path, dotenv_path: str | Path | None = ".env") -> Co
             primary_focus = str(vdata.get("primary_focus", ""))
             raw_aliases = vdata.get("aliases", [])
             aliases = tuple(str(a) for a in raw_aliases)
-            raw_kw = vdata.get("keywords", [])
-            keywords = tuple(str(k) for k in raw_kw)
 
-            v_config = VenueConfig(
-                primary_focus=primary_focus, aliases=aliases, keywords=keywords
-            )
+            v_config = VenueConfig(primary_focus=primary_focus, aliases=aliases)
             venues[venue_id] = v_config
 
             alias_map[venue_id] = venue_id
