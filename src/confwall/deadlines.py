@@ -2,6 +2,7 @@
 
 import calendar
 import re
+from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -151,6 +152,72 @@ def format_deadline_display(dt_local: datetime, tz_str: str) -> str:
     return f"{month_name} {day}, {year} · {time_str} {tz_str}"
 
 
+def detect_publisher(
+    acronym: str,
+    full_name: str,
+    venue_id: str = "",
+    aliases: Sequence[str] = (),
+) -> str:
+    """Detect publisher tag (IEEE, ACM, IEEE / ACM, USENIX, AAAI, ACL, IACR, VLDB, ISOC, Springer, SIAM, or Other)."""
+    text_parts = [acronym, full_name, venue_id] + list(aliases)
+    combined = " ".join(text_parts).upper()
+    vid = venue_id.lower()
+    acr = acronym.upper()
+
+    has_ieee = "IEEE" in combined or vid in ("ispass", "bibm", "micro")
+    has_acm = "ACM" in combined or vid in ("chi", "uist", "cscw", "iui", "ubicomp", "dis", "mobilehci", "tei", "facct", "kdd", "bcb", "asplos", "eurosys", "wsdm", "asiaccs", "sigcomm", "sigkdd", "siggraph")
+    has_usenix = "USENIX" in combined or vid in ("osdi", "sosp", "nsdi", "fast", "atc")
+
+    if has_ieee and has_acm:
+        return "IEEE / ACM"
+    if has_ieee:
+        return "IEEE"
+    if has_acm:
+        return "ACM"
+    if has_usenix:
+        return "USENIX"
+    if "AAAI" in combined or vid == "aaai":
+        return "AAAI"
+    if any(w in combined for w in ["ACL", "NAACL", "EACL", "EMNLP"]):
+        return "ACL"
+    if any(w in combined for w in ["IACR", "EUROCRYPT", "CHES", "CRYPTO", "ASIACRYPT"]):
+        return "IACR"
+    if "VLDB" in combined or vid == "vldb":
+        return "VLDB"
+    if "NDSS" in combined or vid == "ndss":
+        return "ISOC"
+    if "SPRINGER" in combined or "LNCS" in combined or vid in ("refsq", "lncs"):
+        return "Springer"
+    if "SIAM" in combined:
+        return "SIAM"
+
+    return "Other"
+
+
+def detect_format(place: str) -> str:
+    """Detect conference attendance format: 'In-Person', 'Remote', 'Hybrid', or 'TBD'."""
+    if not place:
+        return "TBD"
+    clean = place.strip()
+    if clean.upper() in ("TBD", "NONE", "N/A", "UNKNOWN"):
+        return "TBD"
+
+    c_lower = clean.lower()
+    is_remote_kw = any(kw in c_lower for kw in ["online", "virtual", "remote", "cyber"])
+    words = re.findall(r"\b[a-z]+\b", c_lower)
+    location_words = [
+        w for w in words
+        if w not in ["online", "virtual", "remote", "cyber", "conference", "and", "or", "the", "in"]
+    ]
+    is_hybrid = "hybrid" in c_lower or (is_remote_kw and len(location_words) > 0)
+
+    if is_hybrid:
+        return "Hybrid"
+    if is_remote_kw:
+        return "Remote"
+    return "In-Person"
+
+
 def select_next_deadline(
     timeline: list[dict[str, Any]] | tuple[dict[str, Any], ...],
     default_tz_str: str | None,
@@ -160,6 +227,7 @@ def select_next_deadline(
     """
     Select the earliest remaining future paper deadline from a conference edition timeline.
     Converts deadline display to target timezone (e.g. PST/PDT).
+    Also extracts associated abstract deadline if present.
     """
     if not timeline:
         return None
@@ -169,7 +237,7 @@ def select_next_deadline(
     else:
         now = now.astimezone(timezone.utc)
 
-    candidates: list[tuple[datetime, datetime, str, str | None]] = []
+    candidates: list[tuple[datetime, datetime, str, str | None, dict[str, Any]]] = []
 
     for item in timeline:
         if not isinstance(item, dict):
@@ -194,13 +262,13 @@ def select_next_deadline(
         dt_utc, dt_local, display_tz_str = parsed
 
         if dt_utc >= now:
-            candidates.append((dt_utc, dt_local, display_tz_str, comment_str))
+            candidates.append((dt_utc, dt_local, display_tz_str, comment_str, item))
 
     if not candidates:
         return None
 
     candidates.sort(key=lambda x: x[0])
-    earliest_utc, earliest_local, source_tz_str, comment_str = candidates[0]
+    earliest_utc, earliest_local, source_tz_str, comment_str, selected_item = candidates[0]
 
     # Convert to target display timezone if configured (e.g. PST / PDT)
     if display_tz_target:
@@ -214,6 +282,7 @@ def select_next_deadline(
         tz_label = dt_display.strftime("%Z") or display_tz_target
     else:
         dt_display = earliest_local
+        target_tz = parse_timezone(source_tz_str) or timezone.utc
         tz_label = source_tz_str
 
     deadline_text = format_deadline_display(dt_display, tz_label)
@@ -226,11 +295,48 @@ def select_next_deadline(
         else:
             comment_str = f"({source_time_str})"
 
+    # Look for associated abstract deadline
+    abstract_dt_utc: datetime | None = None
+    abstract_dt_text: str | None = None
+
+    raw_abs_dl = selected_item.get("abstract_deadline") or selected_item.get("abstract deadline")
+    if raw_abs_dl:
+        item_tz = selected_item.get("timezone") or default_tz_str
+        parsed_abs = parse_deadline_datetime(raw_abs_dl, tz_override=item_tz)
+        if parsed_abs is not None:
+            abs_utc, abs_local, _ = parsed_abs
+            abstract_dt_utc = abs_utc
+            abs_display = abs_utc.astimezone(target_tz) if display_tz_target else abs_local
+            abstract_dt_text = format_deadline_display(abs_display, tz_label)
+
+    if not abstract_dt_text:
+        # Search timeline for prior abstract-only items preceding selected paper deadline
+        abs_candidates = []
+        for item in timeline:
+            if not isinstance(item, dict):
+                continue
+            c_str = str(item.get("comment", ""))
+            if is_abstract_only(c_str) or "abstract" in c_str.lower():
+                raw_dl = item.get("deadline")
+                if raw_dl:
+                    item_tz = item.get("timezone") or default_tz_str
+                    p_abs = parse_deadline_datetime(raw_dl, tz_override=item_tz)
+                    if p_abs is not None and p_abs[0] <= earliest_utc:
+                        abs_candidates.append(p_abs)
+        if abs_candidates:
+            abs_candidates.sort(key=lambda x: x[0], reverse=True)
+            abs_utc, abs_local, _ = abs_candidates[0]
+            abstract_dt_utc = abs_utc
+            abs_display = abs_utc.astimezone(target_tz) if display_tz_target else abs_local
+            abstract_dt_text = format_deadline_display(abs_display, tz_label)
+
     return DeadlineInfo(
         deadline_utc=earliest_utc,
         deadline_text=deadline_text,
         deadline_comment=comment_str,
         tz_str=tz_label,
+        abstract_deadline_utc=abstract_dt_utc,
+        abstract_deadline_text=abstract_dt_text,
     )
 
 

@@ -54,17 +54,32 @@
     }
   }
 
+  let countdownIntervalId = null;
+
   function renderSlide(slide) {
     if (!slide) return;
+
+    if (countdownIntervalId) {
+      clearInterval(countdownIntervalId);
+      countdownIntervalId = null;
+    }
 
     const slideImg = document.getElementById("slide-image");
     const acronymEl = document.getElementById("slide-acronym");
     const yearEl = document.getElementById("slide-year");
     const fullnameEl = document.getElementById("slide-fullname");
     const focusEl = document.getElementById("slide-focus");
+    const publisherEl = document.getElementById("slide-publisher");
+    const formatEl = document.getElementById("slide-format");
+    const ranksEl = document.getElementById("slide-ranks");
+    const keywordsEl = document.getElementById("slide-keywords");
     const locationEl = document.getElementById("slide-location");
     const deadlineEl = document.getElementById("slide-deadline");
     const commentEl = document.getElementById("slide-comment");
+    const abstractBoxEl = document.getElementById("slide-abstract-box");
+    const abstractEl = document.getElementById("slide-abstract");
+    const countdownEl = document.getElementById("slide-countdown");
+    const countdownTextEl = document.getElementById("slide-countdown-text");
     const urlEl = document.getElementById("slide-url");
     const creditEl = document.getElementById("photo-credit");
 
@@ -77,8 +92,114 @@
     if (yearEl) yearEl.textContent = " " + slide.year;
     if (fullnameEl) fullnameEl.textContent = slide.full_name;
     if (focusEl) focusEl.textContent = slide.primary_focus;
+
+    // Publisher Tag
+    if (publisherEl) {
+      if (slide.publisher_tag) {
+        publisherEl.textContent = slide.publisher_tag;
+        const pubClass = slide.publisher_tag.toLowerCase().replace(/[^a-z0-9]/g, "");
+        publisherEl.className = `publisher-pill publisher-${pubClass}`;
+        publisherEl.classList.remove("hidden");
+      } else {
+        publisherEl.classList.add("hidden");
+      }
+    }
+
+    // Format Tag
+    if (formatEl) {
+      if (slide.format_tag) {
+        let label = slide.format_tag;
+        if (slide.format_tag === "Remote") label = "Remote";
+        else if (slide.format_tag === "Hybrid") label = "Hybrid";
+        else if (slide.format_tag === "In-Person") label = "In-Person";
+        formatEl.textContent = label;
+        formatEl.className = `format-pill format-${slide.format_tag.toLowerCase().replace(/[^a-z0-9]/g, "")}`;
+        formatEl.classList.remove("hidden");
+      } else {
+        formatEl.classList.add("hidden");
+      }
+    }
+
+    // Rank Badges (CORE / CCF)
+    if (ranksEl) {
+      let ranksHtml = "";
+      if (slide.rank_core) {
+        ranksHtml += `<span class="rank-badge rank-core">CORE ${slide.rank_core}</span>`;
+      }
+      if (slide.rank_ccf) {
+        ranksHtml += `<span class="rank-badge rank-ccf">CCF ${slide.rank_ccf}</span>`;
+      }
+      ranksEl.innerHTML = ranksHtml;
+    }
+
+    // Keywords Tags
+    if (keywordsEl) {
+      if (Array.isArray(slide.keywords) && slide.keywords.length > 0) {
+        keywordsEl.innerHTML = slide.keywords
+          .map((kw) => `<span class="keyword-tag">${kw}</span>`)
+          .join("");
+        keywordsEl.classList.remove("hidden");
+      } else {
+        keywordsEl.innerHTML = "";
+        keywordsEl.classList.add("hidden");
+      }
+    }
+
     if (locationEl) locationEl.textContent = slide.location_display;
     if (deadlineEl) deadlineEl.textContent = slide.deadline_text;
+
+    // Abstract Due Date
+    if (abstractBoxEl && abstractEl) {
+      if (slide.abstract_deadline_text) {
+        abstractEl.textContent = slide.abstract_deadline_text;
+        abstractBoxEl.classList.remove("hidden");
+      } else {
+        abstractBoxEl.classList.add("hidden");
+      }
+    }
+
+    // 30-Day Popping Countdown
+    function updateCountdown() {
+      if (!slide.deadline_utc || !countdownEl || !countdownTextEl) return;
+      const targetTime = new Date(slide.deadline_utc).getTime();
+      const nowTime = new Date().getTime();
+      const diffMs = targetTime - nowTime;
+
+      if (diffMs > 0 && diffMs <= 30 * 24 * 60 * 60 * 1000) {
+        const totalSeconds = Math.floor(diffMs / 1000);
+        const days = Math.floor(totalSeconds / (24 * 3600));
+        const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        let timeStr = "";
+        if (days > 0) {
+          timeStr = `${days}d ${hours}h ${minutes}m ${seconds}s remaining!`;
+        } else {
+          timeStr = `${hours}h ${minutes}m ${seconds}s remaining!`;
+        }
+
+        countdownTextEl.textContent = timeStr;
+        countdownEl.classList.remove("hidden");
+
+        if (days <= 7) {
+          countdownEl.classList.add("urgent");
+        } else {
+          countdownEl.classList.remove("urgent");
+        }
+      } else {
+        countdownEl.classList.add("hidden");
+      }
+    }
+
+    updateCountdown();
+    if (slide.deadline_utc) {
+      const targetTime = new Date(slide.deadline_utc).getTime();
+      const diffMs = targetTime - new Date().getTime();
+      if (diffMs > 0 && diffMs <= 30 * 24 * 60 * 60 * 1000) {
+        countdownIntervalId = setInterval(updateCountdown, 1000);
+      }
+    }
 
     if (urlEl) {
       if (slide.conference_url) {

@@ -22,6 +22,12 @@ class Slide:
     photo_path: str
     photo_credit: str
     photo_source_url: str | None
+    publisher_tag: str = "Other"
+    format_tag: str = "In-Person"
+    abstract_deadline_text: str | None = None
+    keywords: tuple[str, ...] = ()
+    rank_core: str | None = None
+    rank_ccf: str | None = None
 
 
 @dataclass(frozen=True)
@@ -81,6 +87,7 @@ class ConferenceEdition:
     timezone: str | None
     place: str
     sub: str | None = None
+    rank: dict[str, str] | None = None
 
 
 @dataclass(frozen=True)
@@ -89,3 +96,6 @@ class DeadlineInfo:
     deadline_text: str
     deadline_comment: str | None
     tz_str: str | None
+    abstract_deadline_utc: datetime | None = None
+    abstract_deadline_text: str | None = None
+

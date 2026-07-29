@@ -11,7 +11,12 @@ from dateutil.parser import parse as parse_iso_datetime
 from confwall import __version__
 from confwall.conference_source import CCFConferenceSource
 from confwall.config import load_config, load_dotenv, load_photo_overrides
-from confwall.deadlines import is_within_four_months, select_next_deadline
+from confwall.deadlines import (
+    detect_format,
+    detect_publisher,
+    is_within_four_months,
+    select_next_deadline,
+)
 from confwall.locations import parse_location
 from confwall.models import Slide
 from confwall.photos import PhotoManager
@@ -153,6 +158,25 @@ def run_refresh(
         else:
             reused_photos_count += 1
 
+        publisher_tag = detect_publisher(
+            acronym=ed.acronym,
+            full_name=ed.full_name,
+            venue_id=ed.venue_id,
+            aliases=config.venues[ed.venue_id].aliases if ed.venue_id in config.venues else (),
+        )
+
+        format_tag = detect_format(ed.place)
+
+        keywords = config.get_keywords(
+            venue_id=ed.venue_id,
+            primary_focus=primary_focus,
+            description=ed.full_name,
+            sub_category=ed.sub,
+        )
+
+        rank_core = ed.rank.get("core") if ed.rank else None
+        rank_ccf = ed.rank.get("ccf") if ed.rank else None
+
         slide_id = f"{ed.venue_id}-{ed.year}"
         slide = Slide(
             id=slide_id,
@@ -170,6 +194,12 @@ def run_refresh(
             photo_path=photo_path,
             photo_credit=photo_credit,
             photo_source_url=source_url,
+            publisher_tag=publisher_tag,
+            format_tag=format_tag,
+            abstract_deadline_text=d_info.abstract_deadline_text,
+            keywords=tuple(keywords),
+            rank_core=rank_core,
+            rank_ccf=rank_ccf,
         )
         slides.append(slide)
 

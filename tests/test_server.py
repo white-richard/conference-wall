@@ -33,6 +33,14 @@ def test_confwall_request_handler_cache_headers():
     h_html.end_headers()
     assert h_html.headers_sent.get("Cache-Control") == "no-cache, no-store, must-revalidate"
 
+    h_js = DummyHandler("/app.js")
+    h_js.end_headers()
+    assert h_js.headers_sent.get("Cache-Control") == "no-cache, no-store, must-revalidate"
+
+    h_css = DummyHandler("/style.css")
+    h_css.end_headers()
+    assert h_css.headers_sent.get("Cache-Control") == "no-cache, no-store, must-revalidate"
+
     h_img = DummyHandler("/images/test.jpg")
     h_img.end_headers()
     assert h_img.headers_sent.get("Cache-Control") == "public, max-age=31536000, immutable"

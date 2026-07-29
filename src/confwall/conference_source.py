@@ -124,6 +124,9 @@ class CCFConferenceSource:
             if not focus:
                 continue
 
+            rank_raw = item.get("rank")
+            rank = dict(rank_raw) if isinstance(rank_raw, dict) else None
+
             full_name = str(item.get("description", title)).strip() or title
             confs = item.get("confs", [])
             if not isinstance(confs, list):
@@ -160,6 +163,7 @@ class CCFConferenceSource:
                     timezone=str(tz_str) if tz_str else None,
                     place=place,
                     sub=sub,
+                    rank=rank,
                 )
                 matched_editions.append(edition)
 

@@ -13,7 +13,7 @@ class ConfwallRequestHandler(SimpleHTTPRequestHandler):
 
     def end_headers(self) -> None:
         path_lower = self.path.lower().split("?")[0]
-        if path_lower.endswith((".html", ".json")) or path_lower == "/":
+        if path_lower.endswith((".html", ".json", ".js", ".css")) or path_lower == "/":
             self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
             self.send_header("Pragma", "no-cache")
             self.send_header("Expires", "0")

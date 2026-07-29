@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Conference Deadlines Wall</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
   <div id="slideshow-container" class="slideshow-container">
@@ -39,6 +39,9 @@
           <span>Upcoming Conferences</span>
         </div>
         <div class="focus-pill" id="slide-focus"></div>
+        <div class="publisher-pill" id="slide-publisher"></div>
+        <div class="format-pill" id="slide-format"></div>
+        <div class="rank-badges" id="slide-ranks"></div>
       </div>
       <h1 class="conference-title">
         <a id="slide-url" href="#" target="_blank" rel="noopener noreferrer">
@@ -47,15 +50,28 @@
         </a>
       </h1>
       <h2 class="conference-name" id="slide-fullname"></h2>
+      <div class="keywords-list" id="slide-keywords"></div>
     </header>
 
     <!-- Main Caption (Bottom Left) -->
     <main class="slide-caption">
+      <div id="slide-countdown" class="countdown-badge hidden">
+        <span class="countdown-pulse-dot"></span>
+        <span class="countdown-text" id="slide-countdown-text"></span>
+      </div>
+
       <div class="location-text" id="slide-location"></div>
-      <div class="deadline-box">
-        <span class="deadline-label">Submission due:</span>
-        <span class="deadline-value" id="slide-deadline"></span>
-        <span class="deadline-comment" id="slide-comment"></span>
+
+      <div class="deadlines-container">
+        <div class="abstract-box hidden" id="slide-abstract-box">
+          <span class="abstract-label">Abstract due:</span>
+          <span class="abstract-value" id="slide-abstract"></span>
+        </div>
+        <div class="deadline-box">
+          <span class="deadline-label">Submission due:</span>
+          <span class="deadline-value" id="slide-deadline"></span>
+          <span class="deadline-comment" id="slide-comment"></span>
+        </div>
       </div>
     </main>
 
@@ -81,6 +97,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

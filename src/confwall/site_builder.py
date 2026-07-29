@@ -49,6 +49,12 @@ def slide_to_dict(slide: Slide) -> dict[str, Any]:
         "photo_path": photo_path,
         "photo_credit": slide.photo_credit,
         "photo_source_url": slide.photo_source_url,
+        "publisher_tag": slide.publisher_tag,
+        "format_tag": slide.format_tag,
+        "abstract_deadline_text": slide.abstract_deadline_text,
+        "keywords": list(slide.keywords),
+        "rank_core": slide.rank_core,
+        "rank_ccf": slide.rank_ccf,
     }
 
 

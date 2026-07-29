@@ -32,7 +32,10 @@ def local_server(tmp_path: Path):
     # Create dummy image
     (images_dir / "dummy.jpg").write_bytes(b"dummy")
 
-    # Write slides.json
+    # Write slides.json with all features populated
+    from datetime import datetime, timedelta, timezone
+    near_future_iso = (datetime.now(timezone.utc) + timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
     slides_data = {
         "slide_seconds": 1,
         "slides": [
@@ -42,9 +45,15 @@ def local_server(tmp_path: Path):
                 "full_name": "Conference on Machine Learning and Systems",
                 "year": 2027,
                 "conference_url": "https://mlsys.org",
-                "deadline_utc": "2026-10-30T23:59:00Z",
-                "deadline_text": "October 30, 2026 · 23:59 AoE",
+                "deadline_utc": near_future_iso,
+                "deadline_text": "In 10 Days · 23:59 AoE",
                 "deadline_comment": "Round 2",
+                "abstract_deadline_text": "In 3 Days · 23:59 AoE",
+                "publisher_tag": "ACM",
+                "format_tag": "In-Person",
+                "keywords": ["ML Systems", "Hardware Acceleration", "Efficient AI"],
+                "rank_core": "A*",
+                "rank_ccf": "A",
                 "location_display": "Austin, USA",
                 "city": "Austin",
                 "country": "USA",
@@ -62,6 +71,12 @@ def local_server(tmp_path: Path):
                 "deadline_utc": "2026-11-05T23:59:00Z",
                 "deadline_text": "November 5, 2026 · 23:59 UTC-8",
                 "deadline_comment": None,
+                "abstract_deadline_text": "October 20, 2026 · 23:59 UTC-8",
+                "publisher_tag": "USENIX",
+                "format_tag": "Hybrid",
+                "keywords": ["Operating Systems", "Infrastructure", "Systems"],
+                "rank_core": "A*",
+                "rank_ccf": "A",
                 "location_display": "Carlsbad, USA",
                 "city": "Carlsbad",
                 "country": "USA",
@@ -115,6 +130,28 @@ def test_browser_slideshow(local_server):
         assert page.is_visible("#slide-location")
         assert page.is_visible("#slide-deadline")
         assert page.is_visible("#photo-credit")
+
+        # Assert new feature UI elements are visible and rendered correctly
+        assert page.is_visible("#slide-publisher")
+        assert page.text_content("#slide-publisher") in ("ACM", "USENIX")
+
+        assert page.is_visible("#slide-format")
+        format_text = page.text_content("#slide-format")
+        assert "In-Person" in format_text or "Hybrid" in format_text or "Remote" in format_text
+
+        assert page.is_visible("#slide-ranks")
+        assert "CORE A*" in page.text_content("#slide-ranks")
+
+        assert page.is_visible("#slide-keywords")
+        keywords_html = page.inner_html("#slide-keywords")
+        assert "keyword-tag" in keywords_html
+
+        assert page.is_visible("#slide-abstract-box")
+        assert "Abstract due:" in page.text_content("#slide-abstract-box")
+
+        # Check popping countdown visibility if current slide is within 30 days
+        if page.is_visible("#slide-countdown"):
+          assert "remaining!" in page.text_content("#slide-countdown")
 
         # 3. Check right arrow changes slide
         page.keyboard.press("ArrowRight")
