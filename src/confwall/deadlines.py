@@ -203,13 +203,17 @@ def detect_format(place: str) -> str:
         return "TBD"
 
     c_lower = clean.lower()
-    is_remote_kw = any(kw in c_lower for kw in ["online", "virtual", "remote", "cyber"])
     words = re.findall(r"\b[a-z]+\b", c_lower)
-    location_words = [
-        w for w in words
-        if w not in ["online", "virtual", "remote", "cyber", "conference", "and", "or", "the", "in"]
-    ]
-    is_hybrid = "hybrid" in c_lower or (is_remote_kw and len(location_words) > 0)
+    remote_words = {"online", "virtual", "remote"}
+    # Words that survive alongside a remote keyword without implying a physical venue.
+    filler_words = remote_words | {
+        "conference", "event", "venue", "meeting", "symposium", "workshop",
+        "only", "fully", "entirely", "zoom", "webinar", "web",
+        "tbc", "tbd", "format", "and", "or", "the", "in", "on", "a",
+    }
+    is_remote_kw = any(w in remote_words for w in words)
+    location_words = [w for w in words if w not in filler_words]
+    is_hybrid = "hybrid" in words or (is_remote_kw and len(location_words) > 0)
 
     if is_hybrid:
         return "Hybrid"

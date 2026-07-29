@@ -29,6 +29,23 @@ def test_detect_format():
     assert detect_format("TBD") == "TBD"
 
 
+def test_detect_format_remote_without_venue():
+    """Filler words next to a remote keyword must not read as a physical venue."""
+    assert detect_format("Virtual Event") == "Remote"
+    assert detect_format("Online Event") == "Remote"
+    assert detect_format("Fully Virtual") == "Remote"
+    assert detect_format("Virtual conference") == "Remote"
+    assert detect_format("Online (Zoom)") == "Remote"
+    assert detect_format("Remote Only") == "Remote"
+
+
+def test_detect_format_ignores_substring_matches():
+    """Real cities that merely contain a remote keyword stay In-Person."""
+    assert detect_format("Cyberjaya, Malaysia") == "In-Person"
+    assert detect_format("Cybersecurity Center, Tel Aviv") == "In-Person"
+    assert detect_format("Onlineville, USA") == "In-Person"
+
+
 def test_abstract_deadline_selection():
     now = datetime(2026, 1, 1, 0, 0, tzinfo=timezone.utc)
     timeline = (
