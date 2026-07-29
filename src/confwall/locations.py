@@ -1,5 +1,3 @@
-"""Location parsing and normalization for confwall."""
-
 import re
 from dataclasses import dataclass
 
@@ -18,17 +16,13 @@ class ParsedLocation:
 
 
 def normalize_string(s: str) -> str:
-    """Normalize whitespace and lowercases string."""
     return re.sub(r"\s+", " ", s.strip().lower())
 
 
 def parse_location(
     place: str | None, overrides: dict[str, LocationOverride] | None = None
 ) -> ParsedLocation:
-    """
-    Parse an upstream place string into structured location data.
-    Supports location_overrides dictionary.
-    """
+    """Pull city/country out of an upstream place string like "Seattle, WA, USA"."""
     if not place or not isinstance(place, str):
         return ParsedLocation(
             upstream_place="TBD",
@@ -52,7 +46,6 @@ def parse_location(
             is_photographic=False,
         )
 
-    # Check non-photographic places
     upper = upstream.upper()
     if upper in ("TBD", "VIRTUAL", "ONLINE") or any(
         kw in upper for kw in ("VIRTUAL", "ONLINE")
@@ -67,7 +60,6 @@ def parse_location(
             is_photographic=False,
         )
 
-    # Check location overrides first (case-insensitive exact match)
     if overrides:
         for k, ovr in overrides.items():
             if normalize_string(k) == normalize_string(upstream):
@@ -85,11 +77,10 @@ def parse_location(
                     is_photographic=True,
                 )
 
-    # Split by comma
     parts = [p.strip() for p in upstream.split(",") if p.strip()]
 
     if len(parts) == 1:
-        # Single value, e.g., "Singapore" or "TBD"
+        # City-states and the like: "Singapore" is both the city and the country.
         single = parts[0]
         if normalize_string(single) in ("tbd", "virtual", "online"):
             return ParsedLocation(

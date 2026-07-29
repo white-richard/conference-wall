@@ -1,5 +1,3 @@
-"""Tests for CCF conference source parser."""
-
 import io
 import zipfile
 from pathlib import Path

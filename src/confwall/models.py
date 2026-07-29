@@ -1,6 +1,4 @@
-"""Data models for confwall."""
-
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any
 
@@ -44,22 +42,11 @@ class PhotoManifestEntry:
     selected_at: str
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "location_key": self.location_key,
-            "provider": self.provider,
-            "photo_id": self.photo_id,
-            "query": self.query,
-            "photographer": self.photographer,
-            "photographer_url": self.photographer_url,
-            "source_url": self.source_url,
-            "local_file": self.local_file,
-            "width": self.width,
-            "height": self.height,
-            "selected_at": self.selected_at,
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "PhotoManifestEntry":
+        # Manifests written by older versions are missing some of these.
         return cls(
             location_key=data["location_key"],
             provider=data["provider"],

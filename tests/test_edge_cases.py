@@ -1,5 +1,3 @@
-"""Additional targeted tests to reach >= 90% package line coverage."""
-
 import io
 import runpy
 import shutil

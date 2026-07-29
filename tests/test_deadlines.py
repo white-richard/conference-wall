@@ -1,11 +1,9 @@
-"""Tests for deadline parsing, timezone handling, 4-month filtering, and deadline selection."""
-
 from datetime import datetime, timedelta, timezone
 
 from confwall.deadlines import (
     add_calendar_months,
     is_abstract_only,
-    is_within_four_months,
+    is_within_window,
     parse_deadline_datetime,
     parse_timezone,
     select_next_deadline,
@@ -96,13 +94,13 @@ def test_four_calendar_month_boundary():
     now = datetime(2026, 1, 31, 12, 0, 0, tzinfo=timezone.utc)
     end_boundary = datetime(2026, 5, 31, 12, 0, 0, tzinfo=timezone.utc)
 
-    assert is_within_four_months(now, now) is True
-    assert is_within_four_months(end_boundary, now) is True
-    assert is_within_four_months(now - timedelta(seconds=1), now) is False
-    assert is_within_four_months(end_boundary + timedelta(seconds=1), now) is False
+    assert is_within_window(now, now) is True
+    assert is_within_window(end_boundary, now) is True
+    assert is_within_window(now - timedelta(seconds=1), now) is False
+    assert is_within_window(end_boundary + timedelta(seconds=1), now) is False
 
     mid = datetime(2026, 3, 15, 0, 0, 0, tzinfo=timezone.utc)
-    assert is_within_four_months(mid, now) is True
+    assert is_within_window(mid, now) is True
 
 
 def test_is_abstract_only():

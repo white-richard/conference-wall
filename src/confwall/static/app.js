@@ -7,7 +7,10 @@
   let isPaused = false;
   let timerId = null;
 
-  // Simple seeded pseudo-random generator for deterministic testing via ?seed=...
+  // Below this, the deadline is close enough to be worth a live ticking countdown.
+  const COUNTDOWN_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+  // ?seed=... makes the shuffle reproducible so the browser test can assert an order.
   function createRandom(seedParam) {
     if (!seedParam) {
       return Math.random;
@@ -29,20 +32,16 @@
   const seedParam = urlParams.get("seed");
   const randomFunc = createRandom(seedParam);
 
-  function fisherYatesShuffle(array, lastSlideId) {
+  function shuffle(array, lastSlideId) {
     const arr = array.slice();
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(randomFunc() * (i + 1));
-      const temp = arr[i];
-      arr[i] = arr[j];
-      arr[j] = temp;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    // Ensure first slide of new cycle isn't the same as last slide of previous cycle
+    // Otherwise a reshuffle can show the same slide twice in a row across the wrap.
     if (arr.length > 1 && lastSlideId && arr[0].id === lastSlideId) {
       const swapIdx = 1 + Math.floor(randomFunc() * (arr.length - 1));
-      const tmp = arr[0];
-      arr[0] = arr[swapIdx];
-      arr[swapIdx] = tmp;
+      [arr[0], arr[swapIdx]] = [arr[swapIdx], arr[0]];
     }
     return arr;
   }
@@ -92,7 +91,6 @@
     if (fullnameEl) fullnameEl.textContent = slide.full_name;
     if (focusEl) focusEl.textContent = slide.primary_focus;
 
-    // Publisher Tag
     if (publisherEl) {
       if (slide.publisher_tag) {
         publisherEl.textContent = slide.publisher_tag;
@@ -104,14 +102,9 @@
       }
     }
 
-    // Format Tag
     if (formatEl) {
       if (slide.format_tag) {
-        let label = slide.format_tag;
-        if (slide.format_tag === "Remote") label = "Remote";
-        else if (slide.format_tag === "Hybrid") label = "Hybrid";
-        else if (slide.format_tag === "In-Person") label = "In-Person";
-        formatEl.textContent = label;
+        formatEl.textContent = slide.format_tag;
         formatEl.className = `format-pill format-${slide.format_tag.toLowerCase().replace(/[^a-z0-9]/g, "")}`;
         formatEl.classList.remove("hidden");
       } else {
@@ -119,7 +112,6 @@
       }
     }
 
-    // Rank Badges (CORE / CCF)
     if (ranksEl) {
       let ranksHtml = "";
       if (slide.rank_core) {
@@ -134,7 +126,6 @@
     if (locationEl) locationEl.textContent = slide.location_display;
     if (deadlineEl) deadlineEl.textContent = slide.deadline_text;
 
-    // Abstract Due Date
     if (abstractBoxEl && abstractEl) {
       if (slide.abstract_deadline_text) {
         abstractEl.textContent = slide.abstract_deadline_text;
@@ -144,14 +135,16 @@
       }
     }
 
-    // 30-Day Popping Countdown
-    function updateCountdown() {
-      if (!slide.deadline_utc || !countdownEl || !countdownTextEl) return;
-      const targetTime = new Date(slide.deadline_utc).getTime();
-      const nowTime = new Date().getTime();
-      const diffMs = targetTime - nowTime;
+    function msUntilDeadline() {
+      if (!slide.deadline_utc) return null;
+      return new Date(slide.deadline_utc).getTime() - Date.now();
+    }
 
-      if (diffMs > 0 && diffMs <= 30 * 24 * 60 * 60 * 1000) {
+    function updateCountdown() {
+      if (!countdownEl || !countdownTextEl) return;
+      const diffMs = msUntilDeadline();
+
+      if (diffMs !== null && diffMs > 0 && diffMs <= COUNTDOWN_WINDOW_MS) {
         const totalSeconds = Math.floor(diffMs / 1000);
         const days = Math.floor(totalSeconds / (24 * 3600));
         const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
@@ -179,12 +172,9 @@
     }
 
     updateCountdown();
-    if (slide.deadline_utc) {
-      const targetTime = new Date(slide.deadline_utc).getTime();
-      const diffMs = targetTime - new Date().getTime();
-      if (diffMs > 0 && diffMs <= 30 * 24 * 60 * 60 * 1000) {
-        countdownIntervalId = setInterval(updateCountdown, 1000);
-      }
+    const msLeft = msUntilDeadline();
+    if (msLeft !== null && msLeft > 0 && msLeft <= COUNTDOWN_WINDOW_MS) {
+      countdownIntervalId = setInterval(updateCountdown, 1000);
     }
 
     if (urlEl) {
@@ -214,7 +204,6 @@
       }
     }
 
-    // Preload next image
     const nextIdx = (currentIndex + 1) % slides.length;
     if (slides[nextIdx] && slides[nextIdx].photo_path) {
       preloadImage(slides[nextIdx].photo_path);
@@ -226,7 +215,7 @@
     const lastSlideId = slides[currentIndex] ? slides[currentIndex].id : null;
     currentIndex++;
     if (currentIndex >= slides.length) {
-      slides = fisherYatesShuffle(slides, lastSlideId);
+      slides = shuffle(slides, lastSlideId);
       currentIndex = 0;
     }
     renderSlide(slides[currentIndex]);
@@ -314,7 +303,6 @@
     const container = document.getElementById("slideshow-container");
     if (container) {
       container.addEventListener("click", (e) => {
-        // Prevent click if user clicked a link or control button
         if (
           e.target.tagName === "A" ||
           e.target.closest("a") ||
@@ -347,7 +335,7 @@
           return;
         }
 
-        slides = fisherYatesShuffle(rawSlides, null);
+        slides = shuffle(rawSlides, null);
         currentIndex = 0;
         renderSlide(slides[currentIndex]);
         initControls();

@@ -1,5 +1,3 @@
-"""Tests for photo caching, overrides, fallbacks, search, and secret protection."""
-
 import io
 import json
 import logging
@@ -36,13 +34,12 @@ def test_photo_cache_hit_and_override(tmp_path: Path, monkeypatch: pytest.Monkey
         fallback_path=fallback_path,
     )
 
-    # 1. Missing API key uses fallback
+    # No API key, so this should land on the fallback rather than blowing up.
     loc = parse_location("Vienna, Austria")
     rel_path, credit, _source_url, _is_new = mgr.resolve_photo_for_location(loc)
     assert rel_path == "images/fallback-city.jpg"
     assert credit == "Fallback Image"
 
-    # 2. Local override file wins
     override_img = tmp_path / "custom_vienna.jpg"
     override_img.write_bytes(create_valid_jpeg_bytes())
 

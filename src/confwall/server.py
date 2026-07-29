@@ -1,5 +1,3 @@
-"""HTTP server implementation using ThreadingHTTPServer for confwall."""
-
 import logging
 import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -9,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConfwallRequestHandler(SimpleHTTPRequestHandler):
-    """Custom HTTP handler serving files with explicit cache headers."""
+    """Never cache the slide data, cache the photos forever (their names carry the photo ID)."""
 
     def end_headers(self) -> None:
         path_lower = self.path.lower().split("?")[0]
@@ -24,7 +22,6 @@ class ConfwallRequestHandler(SimpleHTTPRequestHandler):
 
 
 def run_server(directory: str | Path, host: str = "127.0.0.1", port: int = 8000) -> None:
-    """Run the ThreadingHTTPServer serving static files from directory."""
     dir_path = Path(directory).resolve()
     if not dir_path.exists():
         raise FileNotFoundError(f"Build directory does not exist: {dir_path}")

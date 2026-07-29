@@ -1,5 +1,3 @@
-"""CLI commands for confwall."""
-
 import argparse
 import logging
 import sys
@@ -14,7 +12,7 @@ from confwall.config import load_config, load_dotenv, load_photo_overrides
 from confwall.deadlines import (
     detect_format,
     detect_publisher,
-    is_within_four_months,
+    is_within_window,
     select_next_deadline,
 )
 from confwall.locations import parse_location
@@ -46,10 +44,7 @@ def run_refresh(
     photo_manager_override: PhotoManager | None = None,
     dotenv_path: str | Path | None = ".env",
 ) -> int:
-    """
-    Execute the refresh workflow.
-    Returns 0 on success, non-zero on failure.
-    """
+    """Returns a process exit code."""
     if dotenv_path:
         load_dotenv(dotenv_path)
 
@@ -131,7 +126,7 @@ def run_refresh(
                 logger.debug(f"Skipping {ed.acronym} {ed.year}: no parseable future paper deadline")
             continue
 
-        if not is_within_four_months(d_info.deadline_utc, now, config.window_months):
+        if not is_within_window(d_info.deadline_utc, now, config.window_months):
             skipped_reasons["outside_four_months"] += 1
             if verbose:
                 logger.debug(

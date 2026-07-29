@@ -1,5 +1,3 @@
-"""Tests for HTTP server module."""
-
 import io
 import socket
 import threading

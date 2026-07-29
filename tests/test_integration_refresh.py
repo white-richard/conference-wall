@@ -1,5 +1,3 @@
-"""Integration tests for confwall refresh workflow."""
-
 import json
 from pathlib import Path
 

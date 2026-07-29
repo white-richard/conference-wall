@@ -1,5 +1,3 @@
-"""Live tests requiring internet access. Skipped by default."""
-
 import os
 
 import pytest
@@ -12,7 +10,6 @@ from confwall.photos import PEXELS_SEARCH_URL
 
 @pytest.mark.live
 def test_live_ccf_snapshot_download():
-    """Verify live CCF-deadlines repository zip download and parsing."""
     client = HttpClient()
     source = CCFConferenceSource(http_client=client)
     config = load_config("config.yml")
@@ -24,7 +21,6 @@ def test_live_ccf_snapshot_download():
 
 @pytest.mark.live
 def test_live_pexels_search():
-    """Verify live Pexels API search response if PEXELS_API_KEY is present."""
     api_key = os.environ.get("PEXELS_API_KEY")
     if not api_key:
         pytest.skip("PEXELS_API_KEY not set")

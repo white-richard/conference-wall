@@ -1,5 +1,3 @@
-"""Configuration loader and models for confwall."""
-
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -41,7 +39,6 @@ CCF_SUB_MAP = {
 
 
 def load_dotenv(dotenv_path: str | Path | None = ".env") -> None:
-    """Load key-value environment variables from a .env file if present."""
     if not dotenv_path:
         return
     path = Path(dotenv_path)
@@ -93,15 +90,11 @@ class Config:
     alias_map: dict[str, str] = field(default_factory=dict)
 
     def get_venue_id_for_alias(self, name: str) -> str | None:
-        """Resolve a venue acronym/alias to its canonical lowercase venue ID."""
         key = name.strip().lower()
         return self.alias_map.get(key)
 
     def get_primary_focus(self, venue_id: str, sub_category: str | None = None) -> str | None:
-        """
-        Determine primary focus for a venue ID or sub category.
-        Looks up explicit venue config first, then falls back to auto_discover sub category mapping.
-        """
+        """config.yml wins; anything unlisted falls back to the upstream category tag."""
         if venue_id in self.venues:
             return self.venues[venue_id].primary_focus
 
@@ -113,7 +106,6 @@ class Config:
 
 
 def load_config(path: str | Path, dotenv_path: str | Path | None = ".env") -> Config:
-    """Load configuration from a YAML file."""
     if dotenv_path:
         load_dotenv(dotenv_path)
     path = Path(path)
@@ -171,7 +163,6 @@ def load_config(path: str | Path, dotenv_path: str | Path | None = ".env") -> Co
 
 
 def load_photo_overrides(path: str | Path) -> dict[str, PhotoOverride]:
-    """Load photo overrides from a YAML file if it exists."""
     path = Path(path)
     if not path.exists():
         return {}

@@ -1,5 +1,3 @@
-"""Playwright browser end-to-end smoke test for confwall."""
-
 import json
 import socket
 import threading
@@ -114,22 +112,19 @@ def test_browser_slideshow(local_server):
         console_errors = []
         page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
 
-        # 1. Load slideshow with ?seed=123 for deterministic shuffle
+        # Seeded so we know which slide comes up first.
         page.goto(f"{url}/index.html?seed=123")
 
-        # 2. Check title & caption text visible
         page.wait_for_selector("#slide-acronym")
         acronym_text = page.text_content("#slide-acronym")
         assert acronym_text in ("MLSys", "OSDI")
 
-        # Required header and caption text
         assert page.is_visible(".site-header-badge")
         assert "Upcoming Conferences" in page.text_content(".site-header-badge")
         assert page.is_visible("#slide-location")
         assert page.is_visible("#slide-deadline")
         assert page.is_visible("#photo-credit")
 
-        # Assert new feature UI elements are visible and rendered correctly
         assert page.is_visible("#slide-publisher")
         assert page.text_content("#slide-publisher") in ("ACM", "USENIX")
 
@@ -143,18 +138,15 @@ def test_browser_slideshow(local_server):
         assert page.is_visible("#slide-abstract-box")
         assert "Abstract due:" in page.text_content("#slide-abstract-box")
 
-        # Check popping countdown visibility if current slide is within 30 days
+        # The countdown only renders inside the 30-day window.
         if page.is_visible("#slide-countdown"):
           assert "remaining!" in page.text_content("#slide-countdown")
 
-        # 3. Check right arrow changes slide
         page.keyboard.press("ArrowRight")
         page.wait_for_timeout(200)
 
-        # 4. Check space pauses advancement
         page.keyboard.press("Space")
 
-        # Assert no console errors
         assert len(console_errors) == 0
 
         browser.close()

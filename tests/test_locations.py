@@ -1,5 +1,3 @@
-"""Tests for location parsing, overrides, and non-photographic classification."""
-
 from confwall.config import LocationOverride
 from confwall.locations import parse_location
 

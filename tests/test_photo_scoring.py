@@ -1,5 +1,3 @@
-"""Tests for photo candidate scoring and filtering."""
-
 from confwall.photos import score_pexels_candidate
 
 

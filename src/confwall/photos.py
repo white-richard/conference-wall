@@ -1,11 +1,11 @@
-"""Photo resolution, Pexels API integration, scoring, caching, and overrides for confwall."""
+"""City photos from Pexels, cached in a manifest so a refresh doesn't re-search every city."""
 
 import io
 import json
 import logging
 import os
 import shutil
-from datetime import UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -25,21 +25,20 @@ PEXELS_PHOTO_URL = "https://api.pexels.com/v1/photos/{id}"
 def score_pexels_candidate(
     photo: dict[str, Any], city: str, country: str, region: str | None = None
 ) -> int:
-    """Deterministically score a Pexels photo candidate."""
+    """Rank a Pexels result on how likely it is to be a usable wide shot of the city.
+
+    Alt text is all we get to go on, so this leans on it heavily.
+    """
     score = 0
     alt = str(photo.get("alt", "")).lower()
     width = int(photo.get("width", 0))
     height = int(photo.get("height", 1)) or 1
 
-    # City in alt text
     if city.lower() in alt:
         score += 10
-
-    # Country or region in alt text
     if country.lower() in alt or (region and region.lower() in alt):
         score += 4
 
-    # Keywords
     if "aerial" in alt:
         score += 5
     if "skyline" in alt:
@@ -51,14 +50,12 @@ def score_pexels_candidate(
     if "panorama" in alt:
         score += 2
 
-    # Aspect ratio & dimensions
     ratio = width / height
     if ratio >= 1.6:
         score += 2
     if width >= 1920:
         score += 2
 
-    # Penalties
     if "portrait" in alt:
         score -= 5
     if "person" in alt or "people" in alt:
@@ -78,7 +75,6 @@ def score_pexels_candidate(
 
 
 class PhotoManager:
-    """Manages photo searches, caching in manifest, overrides, and local downloads."""
 
     def __init__(
         self,
@@ -110,7 +106,6 @@ class PhotoManager:
             return {}
 
     def save_manifest(self) -> None:
-        """Save photo manifest atomically."""
         self.manifest_path.parent.mkdir(parents=True, exist_ok=True)
         tmp_file = self.manifest_path.with_suffix(".tmp")
         data = {k: v.to_dict() for k, v in self.manifest.items()}
@@ -124,13 +119,9 @@ class PhotoManager:
         overrides: dict[str, PhotoOverride] | None = None,
         refresh_photos: bool = False,
     ) -> tuple[str, str, str | None, bool]:
-        """
-        Resolve photo for a parsed location.
-        Returns tuple: (relative_image_path, credit_text, source_url, is_new_download).
-        """
+        """Returns (relative_image_path, credit_text, source_url, is_new_download)."""
         self.images_dir.mkdir(parents=True, exist_ok=True)
 
-        # 1. Non-photographic location or missing location
         if not location.is_photographic or not location.location_key:
             fallback_rel = self._ensure_fallback_in_images()
             return fallback_rel, "Fallback Image", None, False
@@ -138,10 +129,8 @@ class PhotoManager:
         loc_key = location.location_key
         override = (overrides or {}).get(loc_key)
 
-        # 2. Handle override if present
         if override:
             if override.file:
-                # Copy override file to images_dir
                 override_src = Path(override.file)
                 if override_src.exists():
                     clean_name = loc_key.replace("|", "-")
@@ -152,7 +141,6 @@ class PhotoManager:
                     return f"images/{filename}", credit, None, False
 
             if override.pexels_id:
-                # Fetch specific pexels ID
                 api_key = os.environ.get("PEXELS_API_KEY")
                 if api_key:
                     try:
@@ -162,11 +150,15 @@ class PhotoManager:
                         if entry:
                             self.manifest[loc_key] = entry
                             self.save_manifest()
-                            return entry.local_file, f"Photo by {entry.photographer} on Pexels", entry.source_url, True
+                            return (
+                                entry.local_file,
+                                f"Photo by {entry.photographer} on Pexels",
+                                entry.source_url,
+                                True,
+                            )
                     except Exception as e:
                         logger.warning(f"Failed to fetch pexels override ID {override.pexels_id}: {e}")
 
-        # 3. Check cached manifest entry if not refresh_photos
         if not refresh_photos and loc_key in self.manifest:
             entry = self.manifest[loc_key]
             local_target = self.images_dir.parent / entry.local_file
@@ -177,7 +169,8 @@ class PhotoManager:
                     entry.source_url,
                     False,
                 )
-            # Local file missing or corrupt -> try redownloading recorded photo before new search
+            # File went missing or got truncated: re-pull the photo we already picked
+            # rather than searching again and changing the picture out from under the wall.
             if entry.source_url or entry.photo_id:
                 redownloaded = self._redownload_manifest_photo(entry)
                 if redownloaded:
@@ -188,7 +181,6 @@ class PhotoManager:
                         True,
                     )
 
-        # 4. Search Pexels if API key available
         api_key = os.environ.get("PEXELS_API_KEY")
         if api_key and location.city and location.country:
             entry = self._search_and_select_pexels_photo(location, loc_key, api_key)
@@ -202,7 +194,6 @@ class PhotoManager:
                     True,
                 )
 
-        # 5. Fallback image if search produced no results or no API key
         fallback_rel = self._ensure_fallback_in_images()
         return fallback_rel, "Fallback Image", None, False
 
@@ -259,7 +250,7 @@ class PhotoManager:
         country = location.country or ""
         region = location.region
 
-        # Search query hierarchy
+        # Most specific query first; each fallback drops a qualifier.
         queries = []
         if region:
             queries.append(f"{city} {region} {country} aerial skyline")
@@ -283,18 +274,21 @@ class PhotoManager:
                 if not photos:
                     continue
 
-                # Filter and score photos
                 candidates: list[tuple[int, int, dict[str, Any]]] = []
                 for idx, photo in enumerate(photos):
                     if not isinstance(photo, dict):
                         continue
                     w = int(photo.get("width", 0))
                     h = int(photo.get("height", 0))
-                    # Requirements: HTTPS URL, Landscape (w > h), w >= 1200
                     if w <= h or w < 1200:
                         continue
                     src = photo.get("src", {})
-                    img_url = src.get("landscape") or src.get("large2x") or src.get("original") or src.get("large")
+                    img_url = (
+                        src.get("landscape")
+                        or src.get("large2x")
+                        or src.get("original")
+                        or src.get("large")
+                    )
                     if not img_url or not str(img_url).startswith("https://"):
                         continue
 
@@ -302,7 +296,7 @@ class PhotoManager:
                     candidates.append((score, idx, photo))
 
                 if candidates:
-                    # Sort by score desc, then by original API index asc
+                    # Ties fall back to Pexels' own ordering.
                     candidates.sort(key=lambda c: (-c[0], c[1]))
                     best_photo = candidates[0][2]
                     entry = self._download_and_create_entry(best_photo, loc_key, location, query)
@@ -329,7 +323,6 @@ class PhotoManager:
         if not img_url:
             return None
 
-        # Download image bytes and validate
         try:
             img_bytes = self.http_client.get_bytes(str(img_url))
             if not self._validate_image_bytes(img_bytes):
@@ -351,8 +344,6 @@ class PhotoManager:
         source_url = str(photo.get("url", img_url))
         w = int(photo.get("width", 0))
         h = int(photo.get("height", 0))
-        from datetime import datetime
-        now_iso = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         return PhotoManifestEntry(
             location_key=loc_key,
@@ -365,5 +356,5 @@ class PhotoManager:
             local_file=rel_path,
             width=w,
             height=h,
-            selected_at=now_iso,
+            selected_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         )

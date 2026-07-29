@@ -1,5 +1,3 @@
-"""Tests for CLI subcommands, arguments, and failure handling."""
-
 from pathlib import Path
 
 import pytest

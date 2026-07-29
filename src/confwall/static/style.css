@@ -70,7 +70,7 @@ html, body {
   pointer-events: none;
 }
 
-/* Top Right Controls */
+/* controls */
 .top-controls {
   position: absolute;
   top: 2rem;
@@ -104,7 +104,7 @@ html, body {
   border-color: var(--accent-color);
 }
 
-/* Upper Left Header */
+/* header */
 .slide-header {
   position: relative;
   z-index: 3;
@@ -158,7 +158,7 @@ html, body {
   color: var(--accent-color);
 }
 
-/* Publisher Pills */
+/* pills */
 .publisher-pill {
   display: inline-block;
   padding: 0.35rem 0.85rem;
@@ -244,7 +244,7 @@ html, body {
   color: #cbd5e1;
 }
 
-/* Format Pills */
+/* format pills */
 .format-pill {
   display: inline-block;
   padding: 0.35rem 0.85rem;
@@ -279,7 +279,7 @@ html, body {
   color: #94a3b8;
 }
 
-/* Rank Badges */
+/* rank badges */
 .rank-badges {
   display: inline-flex;
   gap: 0.5rem;
@@ -338,7 +338,7 @@ html, body {
   line-height: 1.4;
 }
 
-/* Bottom Left Caption */
+/* caption */
 .slide-caption {
   position: relative;
   z-index: 3;
@@ -346,7 +346,7 @@ html, body {
   margin-top: auto;
 }
 
-/* Popping Countdown Badge */
+/* countdown badge */
 .countdown-badge {
   display: inline-flex;
   align-items: center;
@@ -478,7 +478,7 @@ html, body {
   font-weight: 600;
 }
 
-/* Bottom Right Footer */
+/* footer */
 .slide-footer {
   position: absolute;
   bottom: 1.5rem;
@@ -502,7 +502,7 @@ html, body {
   color: #ffffff;
 }
 
-/* Empty State */
+/* empty state */
 .empty-state {
   position: absolute;
   top: 0;

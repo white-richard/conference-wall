@@ -1,5 +1,3 @@
-"""Shared pytest fixtures for confwall tests."""
-
 import pytest
 
 from confwall.config import Config, VenueConfig

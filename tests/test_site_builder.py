@@ -1,5 +1,3 @@
-"""Tests for site builder and atomic build directory replacement."""
-
 import json
 from datetime import UTC, datetime
 from pathlib import Path

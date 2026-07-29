@@ -1,4 +1,4 @@
-"""Deadline parsing and filtering utilities for confwall."""
+"""Reducing a CCF-Deadlines timeline down to the one deadline that goes on the slide."""
 
 import calendar
 import re
@@ -7,12 +7,12 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from dateutil import tz
+from dateutil.parser import parse as parse_date
 
 from confwall.models import DeadlineInfo
 
 
 def parse_timezone(tz_str: str | None) -> timezone | tz.tzfile | None:
-    """Parse a timezone string into a timezone object or fixed offset."""
     if not tz_str or not isinstance(tz_str, str):
         return None
 
@@ -32,7 +32,7 @@ def parse_timezone(tz_str: str | None) -> timezone | tz.tzfile | None:
     if upper in ("UTC", "UTC+0", "UTC-0", "Z", "GMT", "UTC+00:00", "UTC-00:00"):
         return timezone.utc
 
-    # Match UTC/GMT fixed offsets like UTC-8, UTC+5:30, UTC+0530, -08:00, +05:30
+    # UTC-8, UTC+5:30, UTC+0530, -08:00, +05:30 and friends.
     match = re.match(
         r"^(?:UTC|GMT)?\s*([+-])\s*(\d{1,2})(?::?(\d{2}))?$", clean, re.IGNORECASE
     )
@@ -45,13 +45,11 @@ def parse_timezone(tz_str: str | None) -> timezone | tz.tzfile | None:
             total_minutes = -total_minutes
         return timezone(timedelta(minutes=total_minutes))
 
-    # Try standard IANA timezone lookup via dateutil
-    parsed_tz = tz.gettz(clean)
-    return parsed_tz
+    return tz.gettz(clean)
 
 
 def add_calendar_months(dt: datetime, months: int) -> datetime:
-    """Add a given number of calendar months to a datetime, handling month-end clamping."""
+    """Jan 31 + 1 month lands on Feb 28, not March 3."""
     total_months = dt.month - 1 + months
     target_year = dt.year + total_months // 12
     target_month = total_months % 12 + 1
@@ -63,10 +61,7 @@ def add_calendar_months(dt: datetime, months: int) -> datetime:
 def parse_deadline_datetime(
     deadline_str: str | Any, tz_override: str | None = None
 ) -> tuple[datetime, datetime, str] | None:
-    """
-    Parse deadline string into (dt_utc, dt_local, display_tz_str).
-    Returns None if malformed or unavailable.
-    """
+    """Returns (dt_utc, dt_local, display_tz_str), or None if the string isn't a real date."""
     if not deadline_str or not isinstance(deadline_str, str):
         return None
 
@@ -117,7 +112,6 @@ def parse_deadline_datetime(
 
     if dt_naive is None:
         try:
-            from dateutil.parser import parse as parse_date
             dt_parsed = parse_date(clean)
             if dt_parsed.tzinfo is not None:
                 dt_utc = dt_parsed.astimezone(timezone.utc)
@@ -132,7 +126,6 @@ def parse_deadline_datetime(
 
 
 def is_abstract_only(comment: str | None) -> bool:
-    """Determine if a deadline timeline item is an abstract-only deadline."""
     if not comment:
         return False
     c_lower = comment.lower()
@@ -144,12 +137,21 @@ def is_abstract_only(comment: str | None) -> bool:
 
 
 def format_deadline_display(dt_local: datetime, tz_str: str) -> str:
-    """Format a deadline for display, e.g. 'October 30, 2026 · 23:59 PST'."""
+    """'October 30, 2026 · 23:59 PST'."""
     month_name = dt_local.strftime("%B")
     day = dt_local.day
     year = dt_local.year
     time_str = dt_local.strftime("%H:%M")
     return f"{month_name} {day}, {year} · {time_str} {tz_str}"
+
+
+# Venues whose upstream title and description never spell out the sponsor.
+IEEE_VENUES = {"ispass", "bibm", "micro"}
+ACM_VENUES = {
+    "chi", "uist", "cscw", "iui", "ubicomp", "dis", "mobilehci", "tei", "facct",
+    "kdd", "bcb", "asplos", "eurosys", "wsdm", "asiaccs", "sigcomm", "sigkdd", "siggraph",
+}
+USENIX_VENUES = {"osdi", "sosp", "nsdi", "fast", "atc"}
 
 
 def detect_publisher(
@@ -158,15 +160,14 @@ def detect_publisher(
     venue_id: str = "",
     aliases: Sequence[str] = (),
 ) -> str:
-    """Detect publisher tag (IEEE, ACM, IEEE / ACM, USENIX, AAAI, ACL, IACR, VLDB, ISOC, Springer, SIAM, or Other)."""
+    """Guess the sponsoring body from the venue name, falling back to "Other"."""
     text_parts = [acronym, full_name, venue_id] + list(aliases)
     combined = " ".join(text_parts).upper()
     vid = venue_id.lower()
-    acr = acronym.upper()
 
-    has_ieee = "IEEE" in combined or vid in ("ispass", "bibm", "micro")
-    has_acm = "ACM" in combined or vid in ("chi", "uist", "cscw", "iui", "ubicomp", "dis", "mobilehci", "tei", "facct", "kdd", "bcb", "asplos", "eurosys", "wsdm", "asiaccs", "sigcomm", "sigkdd", "siggraph")
-    has_usenix = "USENIX" in combined or vid in ("osdi", "sosp", "nsdi", "fast", "atc")
+    has_ieee = "IEEE" in combined or vid in IEEE_VENUES
+    has_acm = "ACM" in combined or vid in ACM_VENUES
+    has_usenix = "USENIX" in combined or vid in USENIX_VENUES
 
     if has_ieee and has_acm:
         return "IEEE / ACM"
@@ -195,7 +196,6 @@ def detect_publisher(
 
 
 def detect_format(place: str) -> str:
-    """Detect conference attendance format: 'In-Person', 'Remote', 'Hybrid', or 'TBD'."""
     if not place:
         return "TBD"
     clean = place.strip()
@@ -228,10 +228,11 @@ def select_next_deadline(
     now: datetime,
     display_tz_target: str | None = "PST",
 ) -> DeadlineInfo | None:
-    """
-    Select the earliest remaining future paper deadline from a conference edition timeline.
-    Converts deadline display to target timezone (e.g. PST/PDT).
-    Also extracts associated abstract deadline if present.
+    """Earliest paper deadline still in the future, shown in display_tz_target.
+
+    Abstract-only entries are skipped as candidates but picked back up afterwards, since
+    upstream sometimes puts the abstract date in its own timeline entry and sometimes
+    inline on the paper one.
     """
     if not timeline:
         return None
@@ -274,7 +275,6 @@ def select_next_deadline(
     candidates.sort(key=lambda x: x[0])
     earliest_utc, earliest_local, source_tz_str, comment_str, selected_item = candidates[0]
 
-    # Convert to target display timezone if configured (e.g. PST / PDT)
     if display_tz_target:
         clean_target = display_tz_target.strip().upper()
         if clean_target in ("PST", "PDT", "PT", "PACIFIC", "AMERICA/LOS_ANGELES"):
@@ -291,7 +291,7 @@ def select_next_deadline(
 
     deadline_text = format_deadline_display(dt_display, tz_label)
 
-    # Append source timezone note if different
+    # Keep the venue's own wall-clock time visible; AoE deadlines confuse people otherwise.
     if source_tz_str and source_tz_str.upper() != tz_label.upper():
         source_time_str = f"{earliest_local.strftime('%H:%M')} {source_tz_str}"
         if comment_str:
@@ -299,7 +299,6 @@ def select_next_deadline(
         else:
             comment_str = f"({source_time_str})"
 
-    # Look for associated abstract deadline
     abstract_dt_utc: datetime | None = None
     abstract_dt_text: str | None = None
 
@@ -314,7 +313,6 @@ def select_next_deadline(
             abstract_dt_text = format_deadline_display(abs_display, tz_label)
 
     if not abstract_dt_text:
-        # Search timeline for prior abstract-only items preceding selected paper deadline
         abs_candidates = []
         for item in timeline:
             if not isinstance(item, dict):
@@ -344,12 +342,9 @@ def select_next_deadline(
     )
 
 
-def is_within_four_months(
+def is_within_window(
     deadline_utc: datetime, now: datetime, window_months: int = 4
 ) -> bool:
-    """
-    Check if deadline_utc falls within now and now + window_months calendar months (inclusive).
-    """
     if now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
     else:

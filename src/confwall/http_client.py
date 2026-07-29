@@ -1,5 +1,3 @@
-"""Resilient HTTP client for confwall."""
-
 import logging
 import time
 from typing import Any
@@ -10,14 +8,12 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_CONNECT_TIMEOUT = 5.0
 DEFAULT_READ_TIMEOUT = 15.0
-DEFAULT_USER_AGENT = "confwall/0.1.0 (+https://github.com/user/confwall)"
+DEFAULT_USER_AGENT = "confwall/0.1.0"
 MAX_ATTEMPTS = 3
 INITIAL_BACKOFF = 0.5
 
 
 class HttpClient:
-    """HTTP client with timeouts, retry logic, and user-agent header."""
-
     def __init__(
         self,
         connect_timeout: float = DEFAULT_CONNECT_TIMEOUT,
@@ -38,7 +34,6 @@ class HttpClient:
         params: dict[str, Any] | None = None,
         data: Any = None,
     ) -> requests.Response:
-        """Execute HTTP request with retries for transient errors."""
         attempt = 0
         backoff = INITIAL_BACKOFF
         last_exception: Exception | None = None
@@ -58,8 +53,7 @@ class HttpClient:
                     timeout=(self.connect_timeout, self.read_timeout),
                 )
 
-                # Check status code for retries
-                # Permanent 4xx (400, 401, 403, 404, etc.) should not be retried except 408, 429
+                # 4xx is our fault and won't change on retry, apart from timeout and rate limit.
                 if 400 <= resp.status_code < 500 and resp.status_code not in (408, 429):
                     resp.raise_for_status()
                     return resp

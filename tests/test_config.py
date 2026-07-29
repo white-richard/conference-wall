@@ -1,5 +1,3 @@
-"""Tests for config loading, dotenv parsing, and alias resolution."""
-
 import os
 from pathlib import Path
 

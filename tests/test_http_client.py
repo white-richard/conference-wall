@@ -1,5 +1,3 @@
-"""Tests for http_client module."""
-
 import pytest
 import requests
 

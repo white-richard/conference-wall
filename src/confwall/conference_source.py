@@ -1,5 +1,3 @@
-"""CCF-Deadlines conference source provider."""
-
 import io
 import logging
 import zipfile
@@ -21,18 +19,13 @@ CCF_SNAPSHOT_URL = (
 
 
 class CCFConferenceSource:
-    """Conference data provider for CCF-Deadlines."""
-
     def __init__(self, http_client: HttpClient | None = None) -> None:
         self.http_client = http_client or HttpClient()
 
     def fetch_records_from_zip(
         self, zip_bytes: bytes, config: Config
     ) -> tuple[list[ConferenceEdition], int]:
-        """
-        Parse conference records from raw zip archive bytes.
-        Returns (list of matched ConferenceEdition, total source records count).
-        """
+        """Returns (matched editions, total records seen)."""
         matched_editions: list[ConferenceEdition] = []
         total_source_records = 0
 
@@ -54,10 +47,7 @@ class CCFConferenceSource:
     def fetch_records_from_directory(
         self, dir_path: Path, config: Config
     ) -> tuple[list[ConferenceEdition], int]:
-        """
-        Parse conference records from a local directory (e.g. for test fixtures).
-        Returns (list of matched ConferenceEdition, total source records count).
-        """
+        """Same as fetch_records_from_zip, against an unpacked checkout."""
         matched_editions: list[ConferenceEdition] = []
         total_source_records = 0
 
@@ -80,7 +70,6 @@ class CCFConferenceSource:
     def load_editions(
         self, config: Config, snapshot_zip_bytes: bytes | None = None
     ) -> tuple[list[ConferenceEdition], int]:
-        """Download or load CCF snapshot and return matched editions."""
         if snapshot_zip_bytes is not None:
             return self.fetch_records_from_zip(snapshot_zip_bytes, config)
 

@@ -1,4 +1,4 @@
-"""Static site generator with cross-platform atomic directory replacement for confwall."""
+"""Writes the slideshow into build/ without ever leaving a half-built directory behind."""
 
 import json
 import logging
@@ -17,7 +17,8 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 
 def _safe_rmtree(path: Path) -> None:
-    """Helper to remove directory trees safely, handling Windows file lock delays."""
+    # Windows will occasionally still hold a handle open for a moment after we're done
+    # with the directory, so one retry after a short pause saves a spurious failure.
     if not path.exists():
         return
     try:
@@ -31,7 +32,7 @@ def _safe_rmtree(path: Path) -> None:
 
 
 def slide_to_dict(slide: Slide) -> dict[str, Any]:
-    """Convert slide dataclass to dictionary, ensuring POSIX forward slashes for web photo paths."""
+    # Forward slashes even when the build ran on Windows, since these end up in URLs.
     photo_path = Path(slide.photo_path).as_posix()
     return {
         "id": slide.id,
@@ -63,30 +64,23 @@ def build_site_atomically(
     images_dir: Path,
     slide_seconds: int = 15,
 ) -> None:
-    """
-    Generate static site into a temporary directory, then replace target output_dir.
-    Supports atomic replacement on POSIX and fallback directory sync on Windows.
-    If generation fails, existing output_dir remains untouched.
-    """
+    """Build into a temp directory and swap it in, so a failed refresh leaves the old site up."""
     output_dir = Path(output_dir)
     images_dir = Path(images_dir)
 
-    # Sort slides by deadline_utc
     sorted_slides = sorted(slides, key=lambda s: s.deadline_utc)
 
-    # Create temporary directory on same parent filesystem if possible
+    # Same parent so the swap below stays on one filesystem.
     parent_dir = output_dir.parent
     parent_dir.mkdir(parents=True, exist_ok=True)
 
     with tempfile.TemporaryDirectory(dir=parent_dir, prefix=".confwall_build_") as tmp_dir_str:
         tmp_dir = Path(tmp_dir_str)
 
-        # 1. Copy static assets (index.html, app.js, style.css)
         for static_file in STATIC_DIR.glob("*"):
             if static_file.is_file():
                 shutil.copy2(static_file, tmp_dir / static_file.name)
 
-        # 2. Copy images directory
         tmp_images_dir = tmp_dir / "images"
         tmp_images_dir.mkdir(parents=True, exist_ok=True)
         if images_dir.exists():
@@ -94,7 +88,6 @@ def build_site_atomically(
                 if img.is_file():
                     shutil.copy2(img, tmp_images_dir / img.name)
 
-        # 3. Create slides.json
         now_iso = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         slides_data = {
             "generated_at": now_iso,
@@ -105,7 +98,7 @@ def build_site_atomically(
         with slides_json_path.open("w", encoding="utf-8") as f:
             json.dump(slides_data, f, indent=2, ensure_ascii=False)
 
-        # 4. Replace output_dir safely across OS platforms
+        # Rename the old build aside first so we can put it back if the copy dies partway.
         if output_dir.exists():
             old_backup = parent_dir / f".confwall_old_{output_dir.name}"
             _safe_rmtree(old_backup)
@@ -130,4 +123,4 @@ def build_site_atomically(
         else:
             shutil.copytree(tmp_dir, output_dir)
 
-    logger.info(f"Successfully generated build at {output_dir}")
+    logger.info(f"Wrote build to {output_dir}")

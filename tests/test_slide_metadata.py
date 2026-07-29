@@ -1,14 +1,11 @@
-"""Tests for new slideshow features: publisher tags, format pills, abstract deadlines, keywords, rankings, and countdowns."""
-
 from datetime import datetime, timezone
 
-from confwall.config import Config, VenueConfig
 from confwall.deadlines import (
     detect_format,
     detect_publisher,
     select_next_deadline,
 )
-from confwall.models import ConferenceEdition, Slide
+from confwall.models import Slide
 from confwall.site_builder import slide_to_dict
 
 
