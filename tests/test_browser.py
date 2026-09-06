@@ -48,7 +48,6 @@ def local_server(tmp_path: Path):
                 "deadline_comment": "Round 2",
                 "abstract_deadline_text": "In 3 Days · 23:59 AoE",
                 "publisher_tag": "ACM",
-                "format_tag": "In-Person",
                 "rank_core": "A*",
                 "rank_ccf": "A",
                 "location_display": "Austin, USA",
@@ -70,7 +69,6 @@ def local_server(tmp_path: Path):
                 "deadline_comment": None,
                 "abstract_deadline_text": "October 20, 2026 · 23:59 UTC-8",
                 "publisher_tag": "USENIX",
-                "format_tag": "Hybrid",
                 "rank_core": "A*",
                 "rank_ccf": "A",
                 "location_display": "Carlsbad, USA",
@@ -127,10 +125,6 @@ def test_browser_slideshow(local_server):
 
         assert page.is_visible("#slide-publisher")
         assert page.text_content("#slide-publisher") in ("ACM", "USENIX")
-
-        assert page.is_visible("#slide-format")
-        format_text = page.text_content("#slide-format")
-        assert "In-Person" in format_text or "Hybrid" in format_text or "Remote" in format_text
 
         assert page.is_visible("#slide-ranks")
         assert "CORE A*" in page.text_content("#slide-ranks")

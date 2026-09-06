@@ -69,7 +69,6 @@
     const fullnameEl = document.getElementById("slide-fullname");
     const focusEl = document.getElementById("slide-focus");
     const publisherEl = document.getElementById("slide-publisher");
-    const formatEl = document.getElementById("slide-format");
     const ranksEl = document.getElementById("slide-ranks");
     const locationEl = document.getElementById("slide-location");
     const deadlineEl = document.getElementById("slide-deadline");
@@ -80,6 +79,9 @@
     const countdownTextEl = document.getElementById("slide-countdown-text");
     const urlEl = document.getElementById("slide-url");
     const creditEl = document.getElementById("photo-credit");
+    const counterEl = document.getElementById("slide-counter");
+
+    if (counterEl) counterEl.textContent = `${currentIndex + 1} / ${slides.length}`;
 
     if (slideImg) {
       slideImg.src = slide.photo_path;
@@ -99,16 +101,6 @@
         publisherEl.classList.remove("hidden");
       } else {
         publisherEl.classList.add("hidden");
-      }
-    }
-
-    if (formatEl) {
-      if (slide.format_tag) {
-        formatEl.textContent = slide.format_tag;
-        formatEl.className = `format-pill format-${slide.format_tag.toLowerCase().replace(/[^a-z0-9]/g, "")}`;
-        formatEl.classList.remove("hidden");
-      } else {
-        formatEl.classList.add("hidden");
       }
     }
 

@@ -21,7 +21,6 @@ class Slide:
     photo_credit: str
     photo_source_url: str | None
     publisher_tag: str = "Other"
-    format_tag: str = "In-Person"
     abstract_deadline_text: str | None = None
     rank_core: str | None = None
     rank_ccf: str | None = None

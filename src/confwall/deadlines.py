@@ -195,33 +195,6 @@ def detect_publisher(
     return "Other"
 
 
-def detect_format(place: str) -> str:
-    if not place:
-        return "TBD"
-    clean = place.strip()
-    if clean.upper() in ("TBD", "NONE", "N/A", "UNKNOWN"):
-        return "TBD"
-
-    c_lower = clean.lower()
-    words = re.findall(r"\b[a-z]+\b", c_lower)
-    remote_words = {"online", "virtual", "remote"}
-    # Words that survive alongside a remote keyword without implying a physical venue.
-    filler_words = remote_words | {
-        "conference", "event", "venue", "meeting", "symposium", "workshop",
-        "only", "fully", "entirely", "zoom", "webinar", "web",
-        "tbc", "tbd", "format", "and", "or", "the", "in", "on", "a",
-    }
-    is_remote_kw = any(w in remote_words for w in words)
-    location_words = [w for w in words if w not in filler_words]
-    is_hybrid = "hybrid" in words or (is_remote_kw and len(location_words) > 0)
-
-    if is_hybrid:
-        return "Hybrid"
-    if is_remote_kw:
-        return "Remote"
-    return "In-Person"
-
-
 def select_next_deadline(
     timeline: list[dict[str, Any]] | tuple[dict[str, Any], ...],
     default_tz_str: str | None,

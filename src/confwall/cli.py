@@ -10,7 +10,6 @@ from confwall import __version__
 from confwall.conference_source import CCFConferenceSource
 from confwall.config import load_config, load_dotenv, load_photo_overrides
 from confwall.deadlines import (
-    detect_format,
     detect_publisher,
     is_within_window,
     select_next_deadline,
@@ -160,8 +159,6 @@ def run_refresh(
             aliases=config.venues[ed.venue_id].aliases if ed.venue_id in config.venues else (),
         )
 
-        format_tag = detect_format(ed.place)
-
         rank_core = ed.rank.get("core") if ed.rank else None
         rank_ccf = ed.rank.get("ccf") if ed.rank else None
 
@@ -183,7 +180,6 @@ def run_refresh(
             photo_credit=photo_credit,
             photo_source_url=source_url,
             publisher_tag=publisher_tag,
-            format_tag=format_tag,
             abstract_deadline_text=d_info.abstract_deadline_text,
             rank_core=rank_core,
             rank_ccf=rank_ccf,
