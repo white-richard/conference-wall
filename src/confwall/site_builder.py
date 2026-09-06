@@ -62,6 +62,7 @@ def build_site_atomically(
     slides: list[Slide],
     images_dir: Path,
     slide_seconds: int = 15,
+    window_months: int = 4,
 ) -> None:
     """Build into a temp directory and swap it in, so a failed refresh leaves the old site up."""
     output_dir = Path(output_dir)
@@ -91,6 +92,7 @@ def build_site_atomically(
         slides_data = {
             "generated_at": now_iso,
             "slide_seconds": slide_seconds,
+            "window_months": window_months,
             "slides": [slide_to_dict(s) for s in sorted_slides],
         }
         slides_json_path = tmp_dir / "slides.json"

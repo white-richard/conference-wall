@@ -7,6 +7,23 @@
   let isPaused = false;
   let timerId = null;
 
+  function applyWindowMonths(windowMonths) {
+    const months = Number(windowMonths) || 4;
+    const label = `Next ${months} Month${months === 1 ? "" : "s"}`;
+
+    const badgeWindowEl = document.getElementById("badge-window");
+    if (badgeWindowEl) badgeWindowEl.textContent = label;
+
+    const emptyBadgeWindowEl = document.getElementById("empty-badge-window");
+    if (emptyBadgeWindowEl) emptyBadgeWindowEl.textContent = label;
+
+    const emptyMessageEl = document.getElementById("empty-message");
+    if (emptyMessageEl) {
+      emptyMessageEl.textContent =
+        `No selected conference submission deadlines in the next ${months} month${months === 1 ? "" : "s"}.`;
+    }
+  }
+
   // Below this, the deadline is close enough to be worth a live ticking countdown.
   const COUNTDOWN_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -320,6 +337,7 @@
         if (data.slide_seconds) {
           slideSeconds = Number(data.slide_seconds) || 15;
         }
+        applyWindowMonths(data.window_months);
         const rawSlides = Array.isArray(data.slides) ? data.slides : [];
         if (rawSlides.length === 0) {
           const emptyState = document.getElementById("empty-state");
@@ -335,12 +353,9 @@
       })
       .catch((err) => {
         console.error("Error initializing confwall slideshow:", err);
+        applyWindowMonths();
         const emptyState = document.getElementById("empty-state");
-        if (emptyState) {
-          emptyState.querySelector(".empty-message").textContent =
-            "No selected conference submission deadlines in the next four months.";
-          emptyState.classList.remove("hidden");
-        }
+        if (emptyState) emptyState.classList.remove("hidden");
       });
   }
 

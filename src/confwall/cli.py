@@ -192,6 +192,7 @@ def run_refresh(
             slides=slides,
             images_dir=output_path / "images",
             slide_seconds=config.slide_seconds,
+            window_months=config.window_months,
         )
     except Exception as e:
         logger.error(f"Failed to generate static site build: {e}")

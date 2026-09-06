@@ -161,6 +161,16 @@ html, body {
   flex-shrink: 0;
 }
 
+.badge-subtext {
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-secondary);
+  padding-left: 0.55rem;
+  margin-left: 0.55rem;
+  border-left: 1px solid var(--pill-border);
+}
+
 .focus-pill {
   display: inline-block;
   padding: 0.35rem 0.9rem;
