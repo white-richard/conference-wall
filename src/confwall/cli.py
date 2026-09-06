@@ -110,6 +110,7 @@ def run_refresh(
 
     reused_photos_count = 0
     downloaded_photos_count = 0
+    fallback_photos_count = 0
 
     for ed in editions:
         primary_focus = config.get_primary_focus(ed.venue_id, ed.sub)
@@ -151,6 +152,8 @@ def run_refresh(
             downloaded_photos_count += 1
         else:
             reused_photos_count += 1
+        if photo_path == "images/fallback-city.jpg":
+            fallback_photos_count += 1
 
         publisher_tag = detect_publisher(
             acronym=ed.acronym,
@@ -203,6 +206,9 @@ def run_refresh(
     print(f"Included {len(slides)} deadlines within four months")
     print(f"Reused {reused_photos_count} city photos")
     print(f"Downloaded {downloaded_photos_count} city photos")
+    if fallback_photos_count:
+        suffix = " (Pexels rate limit hit mid-run — rerun later to pick up the rest)" if photo_mgr.rate_limited else ""
+        print(f"Fell back to the default image for {fallback_photos_count} slides{suffix}")
     print(f"Generated {output_path}/")
 
     if verbose:

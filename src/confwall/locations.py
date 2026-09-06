@@ -3,6 +3,46 @@ from dataclasses import dataclass
 
 from confwall.config import LocationOverride
 
+# "City, <state>" with no country listed should resolve to the USA, not treat the
+# state as the country (which broke Pexels searches and split cities like Boulder
+# and Seattle across multiple location_keys depending on how upstream wrote it).
+_US_STATE_ABBRS = {
+    "al", "ak", "az", "ar", "ca", "co", "ct", "de", "fl", "ga", "hi", "id", "il", "in",
+    "ia", "ks", "ky", "la", "me", "md", "ma", "mi", "mn", "ms", "mo", "mt", "ne", "nv",
+    "nh", "nj", "nm", "ny", "nc", "nd", "oh", "ok", "or", "pa", "ri", "sc", "sd", "tn",
+    "tx", "ut", "vt", "va", "wa", "wv", "wi", "wy", "dc",
+}
+_US_STATE_NAMES = {
+    "alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut",
+    "delaware", "florida", "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa",
+    "kansas", "kentucky", "louisiana", "maine", "maryland", "massachusetts", "michigan",
+    "minnesota", "mississippi", "missouri", "montana", "nebraska", "nevada",
+    "new hampshire", "new jersey", "new mexico", "new york", "north carolina",
+    "north dakota", "ohio", "oklahoma", "oregon", "pennsylvania", "rhode island",
+    "south carolina", "south dakota", "tennessee", "texas", "utah", "vermont",
+    "virginia", "washington", "west virginia", "wisconsin", "wyoming",
+    "district of columbia",
+}
+
+# Different upstream records spell the same country differently ("USA" vs "United
+# States"), which produced separate location_keys (and separate Pexels searches and
+# manifest cache entries) for the same real city.
+_COUNTRY_ALIASES = {
+    "usa": "USA",
+    "us": "USA",
+    "u.s.": "USA",
+    "u.s.a.": "USA",
+    "united states": "USA",
+    "united states of america": "USA",
+    "uk": "UK",
+    "u.k.": "UK",
+    "united kingdom": "UK",
+}
+
+
+def _canonical_country(country: str) -> str:
+    return _COUNTRY_ALIASES.get(normalize_string(country), country)
+
 
 @dataclass(frozen=True)
 class ParsedLocation:
@@ -108,6 +148,14 @@ def parse_location(
     city = parts[0]
     country = parts[-1]
     region = ", ".join(parts[1:-1]) if len(parts) > 2 else None
+
+    if region is None:
+        norm_second = normalize_string(country)
+        if norm_second in _US_STATE_NAMES or norm_second in _US_STATE_ABBRS:
+            region = country
+            country = "USA"
+
+    country = _canonical_country(country)
 
     norm_city = normalize_string(city)
     norm_country = normalize_string(country)

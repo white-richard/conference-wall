@@ -88,6 +88,9 @@ class PhotoManager:
         self.fallback_path = Path(fallback_path)
         self.http_client = http_client or HttpClient()
         self.manifest: dict[str, PhotoManifestEntry] = self._load_manifest()
+        # Set when a Pexels search hits a 429 mid-run, so callers can tell "quota
+        # exhausted" apart from "this city genuinely has no good photos" in logs.
+        self.rate_limited = False
 
     def _load_manifest(self) -> dict[str, PhotoManifestEntry]:
         if not self.manifest_path.exists():
@@ -193,6 +196,10 @@ class PhotoManager:
                     entry.source_url,
                     True,
                 )
+            reason = "Pexels rate limit" if self.rate_limited else "no usable Pexels results"
+            logger.warning(f"Falling back to default image for {loc_key}: {reason}")
+        elif not api_key:
+            logger.warning(f"Falling back to default image for {loc_key}: PEXELS_API_KEY not set")
 
         fallback_rel = self._ensure_fallback_in_images()
         return fallback_rel, "Fallback Image", None, False
@@ -304,6 +311,12 @@ class PhotoManager:
                         return entry
 
             except Exception as e:
+                if "429" in str(e):
+                    # Rate-limited: the remaining queries for this city will hit the same
+                    # wall, so stop burning quota instead of firing them anyway.
+                    logger.warning(f"Pexels rate limit hit on query '{query}', giving up on {loc_key} for this run")
+                    self.rate_limited = True
+                    break
                 logger.warning(f"Pexels query '{query}' failed: {e}")
                 continue
 
